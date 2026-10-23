@@ -99,6 +99,28 @@ input[type=number]{font-family:var(--mono);font-variant-numeric:tabular-nums}
 .hr-grid label{font-family:var(--mono);font-weight:400}
 .hr-grid label.due{color:var(--accent);font-weight:600}
 .hr-grid label.due input{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.guide{border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:12px 16px;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.guide ul,.next ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+.guide-title{font-weight:700;margin:4px 0 0}
+.guide.stop{border-color:var(--bad);background:var(--bad-soft)}
+.guide.stop .guide-title{color:var(--bad)}
+.next{border:2px solid var(--warn);background:var(--warn-soft);border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;font-size:14.5px}
+.next p{margin:0}
+.next .next-title{font-weight:700;color:var(--warn);font-size:16px}
+.next button{align-self:flex-start}
+.attempt{border:1px dashed var(--muted);border-radius:6px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.attempt-head{display:flex;gap:10px;flex-wrap:wrap;font-size:13.5px}
+.attempt-head span{color:var(--muted)}
+.attempt-hr{display:flex;flex-wrap:wrap;gap:6px;font-family:var(--mono);font-size:13px}
+.attempt-hr span{background:var(--bg);border-radius:4px;padding:3px 8px}
+.attempt-hr small{color:var(--muted);margin-right:4px}
+#prevAttempts{display:flex;flex-direction:column;gap:8px}
+#prevAttempts:empty{display:none}
+table.ref{width:100%;border-collapse:collapse;font-size:14px}
+table.ref th,table.ref td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+table.ref th{font-size:12px;color:var(--muted);font-weight:600}
+table.ref td:not(:first-child){font-family:var(--mono);font-variant-numeric:tabular-nums}
+table.ref tr.mine td{background:var(--accent-soft)}
 .chart{overflow-x:auto}
 .chart svg{display:block;width:100%;min-width:320px;height:auto}
 
@@ -116,6 +138,23 @@ input[type=number]{font-family:var(--mono);font-variant-numeric:tabular-nums}
 .scale div b{display:block;font-size:13px;color:var(--ink)}
 .scale div.on{background:var(--accent);color:var(--on-accent)}
 .scale div.on b{color:var(--on-accent)}
+.verdict{display:flex;flex-direction:column;gap:4px}
+.verdict p{margin:0;font-size:15.5px;max-width:70ch}
+table.norm{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+table.norm th,table.norm td{padding:7px 10px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}
+table.norm thead th{font-size:12px;color:var(--muted);font-weight:600}
+table.norm thead th.colme{color:var(--accent)}
+table.norm tbody th{text-align:left;font-weight:600;font-family:var(--mono);font-size:13px}
+table.norm td{font-family:var(--mono);font-size:13px}
+table.norm tr.rowme th,table.norm tr.rowme td{background:var(--accent-soft)}
+table.norm td.on{background:var(--accent);color:var(--on-accent);font-weight:600;border-radius:4px}
+.rec{border-left:4px solid var(--accent);background:var(--bg);border-radius:0 6px 6px 0;padding:12px 16px;display:flex;flex-direction:column;gap:4px}
+.rec p{margin:0;max-width:70ch}
+.rec .rec-title{font-weight:700}
+.rec.bad{border-left-color:var(--bad)} .rec.bad .rec-title{color:var(--bad)}
+.rec.warn{border-left-color:var(--warn)} .rec.warn .rec-title{color:var(--warn)}
+.rec.ok{border-left-color:var(--ok)} .rec.ok .rec-title{color:var(--ok)}
+.rec.neutral .rec-title{color:var(--accent)}
 table.calc{width:100%;border-collapse:collapse;font-size:14px}
 table.calc td{padding:6px 0;border-bottom:1px solid var(--line);vertical-align:top}
 table.calc td:last-child{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap;padding-left:12px}
@@ -151,6 +190,8 @@ footer p{margin:0}
   #printDoc .bigres b{font-family:var(--display);font-size:22pt;display:block;line-height:1}
   #printDoc .bigres span{font-size:9pt;color:#333}
   #printDoc{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #printDoc table.norm td,#printDoc table.norm th{text-align:center}
+  #printDoc tr.rowme td,#printDoc tr.rowme th{background:#e2e2e2;font-weight:700}
   #printDoc th.on,#printDoc td.on{background:#000;color:#fff;font-weight:700;border:1.5pt solid #000}
   #printDoc .sigs{display:flex;gap:28pt;margin-top:10pt;break-inside:avoid}
   #printDoc .sigs div{flex:1}
@@ -181,13 +222,15 @@ footer p{margin:0}
     <div class="step-head"><span class="num">01</span><h2>Datos del evaluado</h2></div>
     <div class="grid">
       <label class="field">Nombre completo<input type="text" id="nombre" autocomplete="off"></label>
-      <label class="field">Sexo<select id="sexo"><option value="F">Mujer</option><option value="M">Hombre</option></select></label>
+      <label class="field">Sexo<select id="sexo"><option value="">Selecciona</option><option value="F">Mujer</option><option value="M">Hombre</option></select></label>
       <label class="field">Edad (años)<input type="number" id="edad" min="10" max="90" step="1" inputmode="numeric"></label>
       <label class="field">Peso (kg)<input type="number" id="peso" min="25" max="200" step="0.1" inputmode="decimal"></label>
       <label class="field">FC reposo (lpm)<input type="number" id="fcrep" min="30" max="140" step="1" inputmode="numeric"></label>
       <label class="field">PA sistólica (mmHg)<input type="number" id="pas" min="60" max="260" step="1" inputmode="numeric"></label>
       <label class="field">PA diastólica (mmHg)<input type="number" id="pad" min="30" max="160" step="1" inputmode="numeric"></label>
     </div>
+    <p class="hint">Mide la PA tras 5 minutos sentado. Con 160/100 mmHg o más, se requiere valoración médica previa o cautela. Con 200/110 mmHg o más, no se recomienda hacer la prueba.</p>
+    <div class="alerts" id="paAlerts"></div>
   </section>
 
   <!-- 2 -->
@@ -262,6 +305,33 @@ footer p{margin:0}
       <label class="field" id="fVo2" hidden>VO₂ submáximo medido (L/min)<input type="number" id="vo2" min="0.3" max="5" step="0.01" inputmode="decimal"></label>
     </div>
     <p class="hint" id="cargaHint"></p>
+    <div class="alerts" id="cargaAlerts"></div>
+    <p class="subhead">Referencia para elegir la carga</p>
+    <p class="hint">El objetivo es que la FC quede entre 125 y 170 lpm en estado estable. Lo ideal es 140–160 lpm, porque las cargas que dan FC más altas son más precisas.</p>
+    <div class="tablewrap"><table class="ref">
+      <thead><tr><th>Perfil</th><th>Vatios</th><th>kp a 50 rpm (Monark)</th><th>kgm/min</th></tr></thead>
+      <tbody>
+        <tr data-sex="F"><td>Mujer poco entrenada o mayor</td><td>50–75</td><td>1,0–1,5</td><td>300–450</td></tr>
+        <tr data-sex="F"><td>Mujer entrenada</td><td>75–100</td><td>1,5–2,0</td><td>450–600</td></tr>
+        <tr data-sex="M"><td>Hombre poco entrenado o mayor</td><td>75–100</td><td>1,5–2,0</td><td>450–600</td></tr>
+        <tr data-sex="M"><td>Hombre entrenado</td><td>100–150</td><td>2,0–3,0</td><td>600–900</td></tr>
+      </tbody>
+    </table></div>
+    <p class="hint">Conversiones: en un Monark, kgm/min = kp × rpm × 6. A 50 rpm, kgm/min = kp × 300. Vatios = kgm/min ÷ 6,12.</p>
+    <div class="guide">
+      <p class="guide-title">Errores frecuentes al aplicarlo</p>
+      <ol style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px">
+        <li>Confundir <b>kgm/min con vatios</b>. 600 kgm/min son unos 100 W, no 600 W.</li>
+        <li>No mantener la <b>cadencia de 50 rpm</b> en un cicloergómetro mecánico. A 2 kp y 45 rpm la carga real baja de 600 a 540 kgm/min.</li>
+        <li>No verificar el <b>estado estable</b>: calcular con una FC que todavía está subiendo.</li>
+        <li>Aceptar una FC de trabajo <b>fuera de 125–170 lpm</b>.</li>
+        <li>Olvidar la <b>corrección por edad</b> en mayores de 30 años. La página la aplica sola.</li>
+        <li>Usar la escala de FC del <b>sexo equivocado</b> en el nomograma. Verifica el sexo en el paso 01.</li>
+        <li>Hacer la prueba en un evaluado que no cumplió las <b>instrucciones previas</b> (café, ejercicio, comida).</li>
+        <li>No <b>calibrar el péndulo</b> ni ajustar el sillín.</li>
+        <li>Comparar pruebas de seguimiento hechas con <b>cargas o modalidades distintas</b>.</li>
+      </ol>
+    </div>
     <p class="hint" id="tipoHint"><b>¿No sabes cuál es?</b> Si el cicloergómetro tiene un péndulo o una canastilla con pesas y una escala marcada en kp (como el Monark), es <b>mecánico</b>. Si tiene una consola donde programas los vatios, es <b>electrónico</b>. En un mecánico, la carga depende de la cadencia: mantén las rpm constantes con el metrónomo. El Monark recorre 6 m por vuelta de pedal; en otras marcas, revisa el manual.</p>
   </section>
 
@@ -282,6 +352,8 @@ footer p{margin:0}
         <label class="check" style="padding:4px 6px"><input type="checkbox" id="tSound" checked><span>Sonido</span></label>
       </div>
     </div>
+    <div id="prevAttempts"></div>
+    <p class="subhead" id="attemptTitle">Intento 1</p>
     <div class="hr-grid" id="hrGrid"></div>
     <div class="toolbar">
       <button type="button" id="btnAddMin">Añadir minuto</button>
@@ -289,6 +361,35 @@ footer p{margin:0}
     </div>
     <div class="chart" id="hrChart"></div>
     <div class="alerts" id="hrAlerts"></div>
+    <div id="nextAttempt"></div>
+    <div class="guide">
+      <p class="guide-title">Al minuto 6, verifica dos condiciones</p>
+      <ul>
+        <li><b>Estado estable:</b> la FC de los minutos 5 y 6 no difiere en más de 5 lpm. Si difiere más, sigue pedaleando y registra la FC cada minuto hasta que se estabilice.</li>
+        <li><b>Rango válido:</b> la FC de trabajo está entre 125 y 170 lpm.</li>
+      </ul>
+      <p class="guide-title">Si la FC no queda en el rango</p>
+      <ul>
+        <li><b>Menos de 125 lpm:</b> sube la carga y repite 6 minutos más, contando desde el cambio. La página te sugiere cuánto subir según la FC.</li>
+        <li><b>Más de 170 lpm:</b> detente. La carga fue excesiva; repite otro día con menos carga.</li>
+      </ul>
+      <p class="guide-title">Al terminar</p>
+      <ul>
+        <li>Vuelta a la calma de 2–3 minutos con una carga baja. Vigila al evaluado y mide la PA.</li>
+        <li>No lo dejes ir hasta que la FC y la PA se acerquen a los valores de reposo y no tenga síntomas.</li>
+      </ul>
+    </div>
+    <div class="guide stop">
+      <p class="guide-title">Criterios para detener la prueba de inmediato</p>
+      <ul>
+        <li>Dolor o presión en el pecho.</li>
+        <li>Disnea desproporcionada, mareo, confusión, palidez o sudor frío.</li>
+        <li>Caída de la PA sistólica con el ejercicio, o PA mayor de 250/115 mmHg.</li>
+        <li>Arritmia o FC que no sube con la carga.</li>
+        <li>La persona pide detenerse.</li>
+        <li>Falla del equipo.</li>
+      </ul>
+    </div>
   </section>
 
   <!-- Resultado -->
@@ -328,7 +429,7 @@ const CONS = [
   "Pude hacer preguntas y me las resolvieron"
 ];
 const PAC = ["Sin ejercicio intenso en las últimas 24 h","Sin comida pesada en las últimas 2–3 h","Sin cafeína ni tabaco en las últimas 2–3 h","Ropa y calzado adecuados","Conoce el protocolo y los signos para detener la prueba"];
-const EQ = ["Sillín ajustado (rodilla con 5–10° de flexión abajo)","Pulsómetro colocado y con señal estable","Ergómetro calibrado y carga verificada","Metrónomo listo (50 rpm o 90 golpes/min en step)","Cronómetro y planilla de registro listos"];
+const EQ = ["Sillín ajustado (rodilla con 5–10° de flexión abajo)","Pulsómetro colocado y con señal estable","Péndulo calibrado en 0 sin resistencia (mecánico) o carga verificada en la consola (electrónico)","Metrónomo listo (50 rpm o 90 golpes/min en step)","Cronómetro y planilla de registro listos"];
 
 function renderStatic(){
   const all = [...PARQ, BETA];
@@ -346,6 +447,18 @@ function renderStatic(){
 
 /* ---------- FC por minuto ---------- */
 let nMin = 6, dueIdx = -1;
+let attempts = [];      // intentos previos con FC < 125: {load, hr, hrWork}
+let curLoadTxt = "", pendingApply = null;
+const fk = x=>x.toLocaleString("es-CO",{maximumFractionDigits:2});
+function renderPrev(){
+  $("prevAttempts").innerHTML = attempts.map((a,i)=>`
+    <div class="attempt">
+      <div class="attempt-head"><b>Intento ${i+1}</b><span>${esc(a.load)}</span></div>
+      <div class="attempt-hr">${a.hr.map((v,k)=>`<span><small>Min ${k+1}</small>${v??"—"}</span>`).join("")}</div>
+      <p class="hint">FC de trabajo ${f1(a.hrWork)} lpm, por debajo de 125: se subió la carga.</p>
+    </div>`).join("");
+  $("attemptTitle").textContent = attempts.length ? `Intento ${attempts.length+1} · con la carga nueva (este se usa para el cálculo)` : "Intento 1";
+}
 function renderHR(vals){
   const keep = vals || readHR();
   $("hrGrid").innerHTML = Array.from({length:nMin},(_,i)=>`
@@ -373,12 +486,22 @@ const NORM = {
 };
 const CATS = ["Bajo","Regular","Promedio","Bueno","Alto"];
 const CAT_TXT = [
-  "La capacidad aeróbica está por debajo de lo esperado para su edad y sexo. Åstrand y Ryhming señalan que una disminución de la capacidad aeróbica puede ser uno de los primeros signos de enfermedad, por lo que este valor justifica valoración clínica y un plan de entrenamiento aeróbico progresivo y supervisado.",
-  "La capacidad aeróbica está ligeramente por debajo del promedio para su edad y sexo. Hay margen de mejora con entrenamiento aeróbico regular.",
-  "La capacidad aeróbica está en el rango esperado para su edad y sexo.",
-  "La capacidad aeróbica está por encima del promedio para su edad y sexo, compatible con una persona físicamente activa.",
-  "La capacidad aeróbica es alta para su edad y sexo, propia de personas con entrenamiento aeróbico."
+  "Capacidad aeróbica por debajo de lo esperado. Según los autores, una caída de la capacidad aeróbica puede ser el primer signo de enfermedad. Justifica valoración clínica y un programa aeróbico progresivo y supervisado.",
+  "Algo por debajo del promedio. Hay margen de mejora con entrenamiento aeróbico regular.",
+  "Dentro de lo esperado para la edad y el sexo.",
+  "Por encima del promedio, propio de una persona activa.",
+  "Propio de personas con entrenamiento aeróbico. Los atletas de resistencia (carrera, esquí de fondo) tienen los valores más altos por kilo."
 ];
+const AGE_LBL = { F:["20–29","30–39","40–49","50–65"], M:["20–29","30–39","40–49","50–59","60–69"] };
+const REC_CLS = ["bad","warn","neutral","ok","ok"];
+function rowRanges(c){ return [`< ${c[0]}`,`${c[0]}–${c[1]-1}`,`${c[1]}–${c[2]-1}`,`${c[2]}–${c[3]-1}`,`≥ ${c[3]}`]; }
+function ageRow(sex,age){ return NORM[sex].findIndex(r=>age<=r[0]); }
+function normTable(sex,age,k){
+  const ri=ageRow(sex,age);
+  return `<table class="norm"><thead><tr><th>Edad</th>${CATS.map((c,i)=>`<th class="${i===k?"colme":""}">${c}</th>`).join("")}</tr></thead><tbody>${
+    NORM[sex].map((r,j)=>`<tr class="${j===ri?"rowme":""}"><th>${AGE_LBL[sex][j]}${j===ri?" ◀":""}</th>${rowRanges(r[1]).map((v,i)=>`<td class="${j===ri&&i===k?"on":""}">${v}</td>`).join("")}</tr>`).join("")
+  }</tbody></table>`;
+}
 function classify(sex,age,rel){
   const row = NORM[sex].find(r=>age<=r[0]); const c=row[1];
   let k=0; c.forEach((lim,i)=>{ if(rel>=lim) k=i+1; });
@@ -397,6 +520,13 @@ function update(){
   const sex=$("sexo").value, edad=+$("edad").value, peso=+$("peso").value, modo=$("modo").value;
   const pas=+$("pas").value, pad=+$("pad").value;
   const nombre=$("nombre").value.trim(), doc=$("documento").value.trim();
+
+  // PA en reposo
+  const paA=[];
+  if(pas>=200||pad>=110) paA.push(alertHTML("bad",`<b>Alerta: PA en reposo ${pas||"—"}/${pad||"—"} mmHg.</b> Con 200/110 mmHg o más no se recomienda hacer la prueba.`));
+  else if(pas>=160||pad>=100) paA.push(alertHTML("warn",`<b>PA en reposo ${pas||"—"}/${pad||"—"} mmHg.</b> Con 160/100 mmHg o más se requiere valoración médica previa o cautela.`));
+  $("paAlerts").innerHTML=paA.join("");
+  document.querySelectorAll("table.ref tbody tr").forEach(tr=>tr.classList.toggle("mine",tr.dataset.sex===sex));
 
   // Consentimiento
   let cdone=0; CONS.forEach((_,i)=>$("c"+i).checked&&cdone++);
@@ -422,8 +552,8 @@ function update(){
   const beta = $(`q${PARQ.length}s`).checked; if(!beta && !$(`q${PARQ.length}n`).checked) unanswered++;
   if(parqYes) sa.push(alertHTML("bad",`<b>${parqYes} respuesta${parqYes>1?"s":""} afirmativa${parqYes>1?"s":""}.</b> Requiere valoración médica antes de realizar la prueba.`));
   if(beta) sa.push(alertHTML("bad","<b>Fármaco cronotrópico.</b> La relación FC–VO₂ está alterada; el resultado del test no es válido."));
-  if(pas>=200||pad>=110) sa.push(alertHTML("bad",`<b>PA en reposo ${pas}/${pad} mmHg.</b> No realizar la prueba.`));
-  else if(pas>=160||pad>=100) sa.push(alertHTML("warn",`<b>PA en reposo ${pas}/${pad} mmHg.</b> Precaución; considerar valoración antes de la prueba.`));
+  if(pas>=200||pad>=110) sa.push(alertHTML("bad",`<b>Alerta: PA en reposo ${pas}/${pad} mmHg.</b> No se recomienda hacer la prueba.`));
+  else if(pas>=160||pad>=100) sa.push(alertHTML("warn",`<b>PA en reposo ${pas}/${pad} mmHg.</b> Se requiere valoración médica previa o cautela.`));
   if(unanswered) sa.push(alertHTML("warn",`Faltan ${unanswered} pregunta${unanswered>1?"s":""} por responder.`));
   if(!sa.length) sa.push(alertHTML("ok","<b>Apto para la prueba.</b> Sin hallazgos en el tamizaje."));
   $("screenAlerts").innerHTML = sa.join("");
@@ -440,18 +570,18 @@ function update(){
   ["fKp","fRpm","fMv"].forEach(id=>$(id).hidden = !(ciclo && unidad==="kp"));
   $("fVo2").hidden = modo!=="vo2";
   let vo2sub=null, cargaTxt="", modoTxt="";
+  const cAl=[];
   if(ciclo && unidad==="kp"){
     const kp=+$("kp").value, rpm=+$("rpm").value||50, mv=+$("mv").value||6;
     const kgm=kp*rpm*mv, w=kgm/6.12;
     modoTxt = `Cicloergómetro mecánico, ${kp?f2(kp):"—"} kp a ${rpm} rpm, ${mv} m por vuelta (${kp?f0(kgm):"—"} kgm/min ≈ ${kp?f0(w):"—"} W)`;
     if(kp>0){ vo2sub = kgm*0.00239; cargaTxt=`${f2(kp)} kp × ${rpm} rpm × ${String(mv).replace(".",",")} m = ${f0(kgm)} kgm/min ≈ ${f0(w)} W → VO₂ estimado ${f2(vo2sub)} L/min.`; }
-    if(rpm!==50) cargaTxt += ` El protocolo clásico usa 50 rpm.`;
-    cargaTxt += ` Resistencia sugerida a 50 rpm en un Monark: ${sex==="F"?"1–1,5 kp (poco entrenada) o 1,5–2 kp (entrenada)":"1,5–2 kp (poco entrenado) o 2–3 kp (entrenado)"}.`;
+    if(kp>0 && rpm!==50) cAl.push(alertHTML("warn",`<b>Cadencia de ${rpm} rpm.</b> A ${fk(kp)} kp la carga real es ${f0(kgm)} kgm/min, no ${f0(kp*mv*50)} como a 50 rpm. Mantén 50 rpm con el metrónomo, o escribe aquí las rpm reales.`));
   } else if(ciclo){
     const w=+$("carga").value; const kgm=w*6.12;
     modoTxt = `Cicloergómetro electrónico a 50 rpm, ${w||"—"} W (${w?f0(kgm):"—"} kgm/min)`;
     if(w>0){ vo2sub = kgm*0.00239; cargaTxt=`${w} W = ${f0(kgm)} kgm/min → VO₂ estimado ${f2(vo2sub)} L/min.`; }
-    cargaTxt += ` Carga sugerida: ${sex==="F"?"50–75 W (poco entrenada) o 75–100 W (entrenada)":"75–100 W (poco entrenado) o 100–150 W (entrenado)"}.`;
+    if(w>200) cAl.push(alertHTML("warn",`<b>${w} W es una carga muy alta para este test.</b> ¿Escribiste kgm/min? 600 kgm/min son unos 100 W, no 600 W. Para pasar de kgm/min a vatios, divide entre 6,12.`));
   } else if(modo==="step"){
     const h = sex==="M"?40:33;
     modoTxt = `Step test, banco de ${h} cm, 22,5 subidas/min`;
@@ -463,6 +593,8 @@ function update(){
     cargaTxt="Usa el VO₂ promedio del último minuto medido con analizador de gases.";
   }
   $("cargaHint").textContent = cargaTxt.trim();
+  if(!sex) cAl.push(alertHTML("warn","Selecciona el sexo en el paso 01: define la escala de FC y la tabla de clasificación."));
+  $("cargaAlerts").innerHTML = cAl.join("");
 
   // FC
   const hr = readHR().slice(0,nMin);
@@ -472,16 +604,64 @@ function update(){
     hrWork=(last+prev)/2; steady=Math.abs(last-prev)<=5;
     ha.push(steady?alertHTML("ok",`<b>Estado estable.</b> Min ${nMin-1}: ${prev} lpm · Min ${nMin}: ${last} lpm (diferencia ${Math.abs(last-prev)} lpm).`)
                   :alertHTML("warn",`<b>Sin estado estable.</b> Diferencia de ${Math.abs(last-prev)} lpm entre los dos últimos minutos. Continúa un minuto más.`));
-    if(hrWork<125) ha.push(alertHTML("warn",`<b>FC de trabajo ${f1(hrWork)} lpm, por debajo de 125.</b> Aumenta la carga y repite 6 minutos.`));
-    else if(hrWork>170) ha.push(alertHTML("bad",`<b>FC de trabajo ${f1(hrWork)} lpm, por encima de 170.</b> Carga excesiva; repite otro día con menos carga.`));
+    if(hrWork<125) ha.push(alertHTML("warn",`<b>FC de trabajo ${f1(hrWork)} lpm, por debajo de 125.</b> Ajusta la carga: abajo está la sugerencia.`));
+    else if(hrWork>170) ha.push(alertHTML("bad",`<b>FC de trabajo ${f1(hrWork)} lpm, por encima de 170.</b> Detente. La carga fue excesiva; repite otro día con menos carga.`));
     else ha.push(alertHTML("ok",`<b>FC de trabajo ${f1(hrWork)} lpm</b>, dentro del rango válido (125–170).`));
   } else ha.push(alertHTML("warn",`Registra la FC de los minutos ${nMin-1} y ${nMin} para calcular.`));
   $("hrAlerts").innerHTML = ha.join("");
+
+  // Ajuste de carga si la FC < 125
+  curLoadTxt = modoTxt; pendingApply = null;
+  let nx = "";
+  if(hrWork!=null && hrWork<125){
+    const inc = hrWork>=115 ? 1 : hrWork>=105 ? 1.5 : 2;   // kp a 50 rpm (≈ 50 W por kp)
+    const falta = Math.round(145-hrWork);
+    let sug="", newTxt="";
+    if(ciclo && unidad==="kp"){
+      const cur=+$("kp").value||0, nk=cur+inc;
+      sug=`sube <b>${fk(inc)} kp</b>: de ${fk(cur)} a <b>${fk(nk)} kp</b>`; newTxt=`${fk(nk)} kp`;
+      pendingApply=()=>{ $("kp").value=nk; };
+    } else if(ciclo){
+      const cur=+$("carga").value||0, nw=cur+inc*50;
+      sug=`sube <b>${inc*50} W</b>: de ${cur} a <b>${nw} W</b>`; newTxt=`${nw} W`;
+      pendingApply=()=>{ $("carga").value=nw; };
+    } else if(modo==="vo2"){
+      sug=`sube la carga unos <b>${inc*50} W</b> (${fk(inc)} kp a 50 rpm) y vuelve a medir el VO₂ al final`; newTxt="la carga nueva";
+      pendingApply=()=>{ $("vo2").value=""; };
+    }
+    const ord = ["segundo","tercer"][attempts.length] || null;
+    if(modo==="step"){
+      nx = `<div class="next"><p class="next-title">Ajusta la carga</p><p>El step test tiene una carga fija, así que no se puede subir. Si la FC no llega a 125 lpm, repite la evaluación en cicloergómetro.</p></div>`;
+    } else if(!ord){
+      nx = `<div class="next"><p class="next-title">La FC sigue por debajo de 125 lpm</p><p>Ya se hicieron 3 intentos. Detén la prueba y repítela otro día empezando con una carga más alta.</p></div>`;
+    } else {
+      nx = `<div class="next">
+        <p class="next-title">Ajusta la carga: FC de trabajo ${f1(hrWork)} lpm</p>
+        <p>Faltan unos ${falta} lpm para llegar a 145. Según la FC, ${sug}. Cada 0,5 kp (25 W) suele subir la FC 10–20 lpm; si la persona es poco entrenada o mayor, sube un poco menos.</p>
+        <ol>
+          <li>No pares: el evaluado sigue pedaleando a 50 rpm.</li>
+          <li>Pon la carga nueva en el cicloergómetro.</li>
+          <li>Toca el botón: se guarda este intento, se abre una línea nueva de minutos y se reinicia el cronómetro.</li>
+          <li>Vuelve a iniciar el cronómetro y registra la FC 6 minutos más. El cálculo usa solo el intento nuevo.</li>
+        </ol>
+        <button type="button" class="primary" id="btnNextAttempt">Iniciar ${ord} intento con ${newTxt}</button>
+      </div>`;
+    }
+  }
+  // Solo se redibuja si cambió, para no perder el toque en el botón
+  if($("nextAttempt").dataset.h !== nx){ $("nextAttempt").innerHTML = nx; $("nextAttempt").dataset.h = nx; }
+  if($("btnNextAttempt")) $("btnNextAttempt").onclick = ()=>{
+    attempts.push({load:curLoadTxt, hr:readHR().slice(0,nMin), hrWork});
+    if(pendingApply) pendingApply();
+    nMin=6; dueIdx=-1; renderHR(Array(12).fill(null)); renderPrev(); timer.reset(); update();
+    $("timer").scrollIntoView({behavior:"smooth",block:"start"});
+  };
   $("hrChart").innerHTML = chartSVG(hr);
 
   // Resultado
   R = null;
   const missing=[];
+  if(!sex) missing.push("sexo");
   if(!(edad>0)) missing.push("edad"); if(!(peso>0)) missing.push("peso");
   if(vo2sub==null) missing.push(modo==="vo2"?"VO₂ medido":(ciclo&&unidad==="kp"?"resistencia en kp":"carga")); if(hrWork==null) missing.push(`FC de los minutos ${nMin-1} y ${nMin}`);
   if(missing.length){ $("resBody").innerHTML = `<p class="hint">Para ver el resultado completa: ${missing.join(", ")}.</p>`; return; }
@@ -510,7 +690,8 @@ function update(){
     `Evaluado: ${nombre||"—"} · Doc. ${doc||"—"} · ${sex==="M"?"Hombre":"Mujer"} · ${edad} años · ${f1(peso)} kg`,
     `Consentimiento informado: ${consentOK?"firmado":rechaza?"NO aceptado":"incompleto"} · Evaluador: ${evaluador||"—"}`,
     `Reposo: FC ${R.fcrep||"—"} lpm · PA ${pas||"—"}/${pad||"—"} mmHg`,
-    `Modalidad: ${modoTxt}`,
+    ...attempts.map((a,i)=>`Intento ${i+1}: ${a.load} · FC ${a.hr.map(v=>v??"—").join(", ")} lpm · FC de trabajo ${f1(a.hrWork)} (< 125, se subió la carga)`),
+    `${attempts.length?`Intento ${attempts.length+1} (usado para el cálculo)`:"Modalidad"}: ${modoTxt}`,
     `FC por minuto: ${hr.map(v=>v??"—").join(", ")} lpm`,
     `FC de trabajo: ${f1(hrWork)} lpm (${steady?"estado estable":"sin estado estable"})`,
     `VO₂ submáximo: ${f2(vo2sub)} L/min (${Math.round(frac*100)} % del VO₂máx)`,
@@ -525,8 +706,13 @@ function update(){
       <div class="metric sec"><span class="k">VO₂máx absoluto</span><span class="v">${f2(abs)}<small>L/min</small></span></div>
       <div class="metric"><span class="k">Clasificación</span><span class="pill">${CATS[k]}</span></div>
     </div>
-    <div class="scale" aria-label="Tabla normativa">${CATS.map((c,i)=>`<div class="${i===k?"on":""}"><b>${c}</b>${ranges[i]}</div>`).join("")}</div>
-    <p class="hint">Rangos para ${sex==="M"?"hombres":"mujeres"} de ${edad} años, en ml/kg/min (Åstrand).</p>
+    <div class="verdict">
+      <p class="subhead" style="margin:0">Dónde quedó en la tabla de Åstrand</p>
+      <p>Con un VO₂máx de <b>${f1(rel)} ml/kg/min</b>, ${sex==="M"?"el evaluado":"la evaluada"} de ${edad} años queda en la categoría <b>${CATS[k]}</b> para ${sex==="M"?"hombres":"mujeres"} de ${AGE_LBL[sex][ageRow(sex,edad)]} años (rango ${ranges[k]} ml/kg/min).</p>
+    </div>
+    <div class="tablewrap">${normTable(sex,edad,k)}</div>
+    <p class="hint">Clasificación de Åstrand en ml/kg/min. La fila de su edad está resaltada y la casilla oscura es su resultado.</p>
+    <div class="rec ${REC_CLS[k]}"><p class="rec-title">Recomendación · ${CATS[k]}</p><p>${CAT_TXT[k]}</p></div>
     ${flags.length?`<div class="alerts">${flags.map(f=>alertHTML(f[0],f[1])).join("")}</div>`:""}
     <div class="tablewrap"><table class="calc"><tbody>
       <tr><td>FC de trabajo (promedio de los dos últimos minutos)</td><td>${f1(hrWork)} lpm</td></tr>
@@ -625,6 +811,9 @@ function buildPrint(R){
   <p>Betabloqueadores u otros fármacos cronotrópicos: ${R.beta?"<b>Sí</b>":"No"}. Checklist de preparación: ${R.done}/${R.total} ítems verificados.</p>
 
   <h3>4. Protocolo y frecuencia cardíaca</h3>
+  ${attempts.length?`<p>Intentos previos con FC de trabajo por debajo de 125 lpm, en los que se subió la carga:</p>
+  <table>${attempts.map((a,i)=>`<tr><th>Intento ${i+1}</th><td>${esc(a.load)}</td><td class="num">FC: ${a.hr.map(v=>v??"—").join(" · ")}</td><td class="num">FC de trabajo ${f1(a.hrWork)}</td></tr>`).join("")}</table>
+  <p><b>Intento ${attempts.length+1} (usado para el cálculo):</b></p>`:""}
   <p>${R.modoTxt}.</p>
   <table>
     <tr><th>Minuto</th>${R.hr.map((_,i)=>`<th class="num">${i+1}</th>`).join("")}</tr>
@@ -639,10 +828,9 @@ function buildPrint(R){
     <div><b>${f2(R.abs)}</b><span>L/min · VO₂máx absoluto</span></div>
     <div><b>${CATS[R.k]}</b><span>Clasificación (Åstrand)</span></div>
   </div>
-  <table>
-    <tr>${CATS.map((c,i)=>`<th class="${i===R.k?"on":""}">${c}</th>`).join("")}</tr>
-    <tr>${R.ranges.map((r,i)=>`<td class="num ${i===R.k?"on":""}">${r}</td>`).join("")}</tr>
-  </table>
+  <p>Con un VO₂máx de <b>${f1(R.rel)} ml/kg/min</b>, ${R.sex==="M"?"el evaluado":"la evaluada"} de ${R.edad} años queda en la categoría <b>${CATS[R.k]}</b> para ${R.sex==="M"?"hombres":"mujeres"} de ${AGE_LBL[R.sex][ageRow(R.sex,R.edad)]} años (rango ${R.ranges[R.k]} ml/kg/min).</p>
+  ${normTable(R.sex,R.edad,R.k)}
+  <div class="box"><b>Recomendación · ${CATS[R.k]}.</b> ${CAT_TXT[R.k]}</div>
   <table>
     <tr><td>VO₂ submáximo</td><td class="num">${f2(R.vo2sub)} L/min</td><td>Intensidad relativa</td><td class="num">${Math.round(R.frac*100)} % VO₂máx</td></tr>
     <tr><td>VO₂máx sin corregir</td><td class="num">${f2(R.raw)} L/min</td><td>Factor de edad</td><td class="num">× ${f2(R.fac)}</td></tr>
@@ -705,7 +893,10 @@ const timer = (()=>{
     if(m>lastMin){ for(let k=lastMin;k<m;k++) minuteDone(k); lastMin=m; }
     const curMin=m+1;
     let phase, msg;
-    if(!t0 && e===0){ phase="Listo para iniciar"; msg="Duración mínima: 6 minutos."; }
+    if(!t0 && e===0){
+      phase = attempts.length ? `Intento ${attempts.length+1} · toca Iniciar` : "Listo para iniciar";
+      msg = attempts.length ? "Pon la carga nueva y vuelve a iniciar el cronómetro. Registra la FC 6 minutos más." : "Duración mínima: 6 minutos.";
+    }
     else if(curMin<=4){ phase=`Minuto ${curMin} · Adaptación`; msg=m>0?`Anota la FC del minuto ${m}.`:"Mantén la cadencia constante."; }
     else if(curMin<=nMin){ phase=`Minuto ${curMin} · Estado estable`; msg=`Anota la FC del minuto ${m}. Los minutos ${nMin-1} y ${nMin} definen la FC de trabajo.`; }
     else { phase=`Minuto ${curMin} · Prolongación`; msg=`Se completaron ${m} minutos. Si la FC ya está estable, detén la prueba y pasa a la vuelta a la calma.`; }
@@ -737,11 +928,12 @@ const timer = (()=>{
 const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;};
 function clearAll(){
   ["nombre","consNombre","documento","evaluador","edad","peso","fcrep","pas","pad","carga","vo2"].forEach(k=>$(k).value="");
-  $("sexo").value="F"; $("modo").value="ciclo"; $("cfecha").value=today();
+  $("sexo").value=""; $("modo").value="ciclo"; $("cfecha").value=today();
   $("unidad").value="W"; $("kp").value=""; $("rpm").value="50"; $("mv").value="6";
   document.querySelectorAll('#parq input, .checks input:not(#tSound), #consDec input').forEach(el=>el.checked=false);
+  attempts=[]; renderPrev();
   sig.clear(); timer.reset();
-  nMin=6; dueIdx=-1; renderHR([]);
+  nMin=6; dueIdx=-1; renderHR(Array(12).fill(null));
   update();
   window.scrollTo({top:0});
 }
