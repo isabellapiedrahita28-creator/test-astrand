@@ -3,16 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Consentimiento informado, checklist preprueba, registro de FC y cálculo del VO2máx estimado con el test de Åstrand-Ryhming.">
+<meta name="description" content="Consentimiento informado, cronómetro, registro de FC y cálculo del VO2máx estimado con el test de Åstrand-Ryhming.">
 <style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
 <title>Test de Åstrand-Ryhming</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
-/* Layout: hoja clínica de laboratorio — columna de formulario con pasos numerados (son una secuencia real) y panel de resultado al final */
+/* Layout: hoja clínica de laboratorio — pasos numerados (son una secuencia real), cronómetro fijo en el registro de FC, informe imprimible al final */
 :root{
   --bg:#f3f6f7; --paper:#ffffff; --ink:#14262b; --muted:#5b6f75; --line:#d5e0e2;
-  --accent:#0d6e6e; --accent-soft:#e1f0ef;
+  --accent:#0d6e6e; --accent-soft:#e1f0ef; --on-accent:#ffffff;
   --ok:#1f7a3f; --ok-soft:#e3f3e8; --warn:#9a5b00; --warn-soft:#fbf0dc; --bad:#b3261e; --bad-soft:#fbe5e3;
   --display:"Archivo", "Helvetica Neue", Arial, sans-serif;
   --body:"Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -20,25 +20,28 @@
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#0e1719; --paper:#152225; --ink:#e3eeef; --muted:#93a8ad; --line:#2a3d41;
-  --accent:#4fc1bd; --accent-soft:#16393a;
+  --accent:#4fc1bd; --accent-soft:#16393a; --on-accent:#0e1719;
   --ok:#6fd08f; --ok-soft:#173523; --warn:#f0b65a; --warn-soft:#3a2c12; --bad:#f28b82; --bad-soft:#3e1c1a; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0e1719; --paper:#152225; --ink:#e3eeef; --muted:#93a8ad; --line:#2a3d41;
-  --accent:#4fc1bd; --accent-soft:#16393a;
+  --accent:#4fc1bd; --accent-soft:#16393a; --on-accent:#0e1719;
   --ok:#6fd08f; --ok-soft:#173523; --warn:#f0b65a; --warn-soft:#3a2c12; --bad:#f28b82; --bad-soft:#3e1c1a; color-scheme:dark}
 
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
 .wrap{max-width:860px;margin:0 auto;padding-block:28px 64px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));display:flex;flex-direction:column;gap:20px}
-header{display:flex;flex-direction:column;gap:6px;padding-bottom:8px;border-bottom:2px solid var(--ink)}
+header{display:flex;flex-direction:column;gap:6px;padding-bottom:12px;border-bottom:2px solid var(--ink)}
 .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
 h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,5vw,40px);line-height:1.05;margin:0;text-wrap:balance}
 .lede{color:var(--muted);margin:0;max-width:65ch}
-.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+header .toolbar{margin-top:8px}
 button{font:600 14px var(--body);border-radius:6px;padding:8px 14px;cursor:pointer;border:1px solid var(--line);background:var(--paper);color:var(--ink)}
-button.primary{background:var(--accent);border-color:var(--accent);color:var(--paper)}
-button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.example-tag{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--warn);background:var(--warn-soft);padding:4px 10px;border-radius:999px;align-self:flex-start}
+button:disabled{opacity:.45;cursor:not-allowed}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+button.danger{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+button:focus-visible,input:focus-visible,select:focus-visible,canvas:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 section.step{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:14px}
 .step-head{display:flex;gap:12px;align-items:baseline}
@@ -47,13 +50,16 @@ h2{font-family:var(--display);font-weight:700;font-size:20px;margin:0}
 .hint{color:var(--muted);font-size:13.5px;margin:0}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
 label.field{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;color:var(--muted)}
+input[type=number],input[type=text],input[type=date],select{font:500 15px var(--body);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%;min-width:0}
+input[type=number]{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
 .consent{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;font-size:14px}
 .consent p{margin:0}
+.consent input.inline{display:inline-block;width:18ch;max-width:100%;font:600 14px var(--body);color:var(--ink);background:var(--paper);border:0;border-bottom:1.5px solid var(--accent);border-radius:4px 4px 0 0;padding:3px 6px;margin:2px 0}
+.consent input.inline#documento{width:13ch;font-family:var(--mono)}
 .sigbox{display:flex;flex-direction:column;gap:8px}
 .sighead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 #sig{display:block;width:100%;max-width:100%;height:auto;aspect-ratio:600/170;background:var(--bg);border:1.5px dashed var(--muted);border-radius:6px;touch-action:none;cursor:crosshair}
-input[type=number],input[type=text],input[type=date],select{font:500 15px var(--body);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%;min-width:0}
-input[type=number]{font-family:var(--mono);font-variant-numeric:tabular-nums}
 
 .checks{display:flex;flex-direction:column;gap:2px}
 .check{display:flex;gap:10px;align-items:flex-start;padding:8px 6px;border-radius:6px;cursor:pointer}
@@ -66,25 +72,38 @@ input[type=number]{font-family:var(--mono);font-variant-numeric:tabular-nums}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
 .seg label{padding:5px 12px;font-size:13px;font-weight:600;cursor:pointer;color:var(--muted)}
 .seg input{position:absolute;opacity:0;pointer-events:none}
-.seg input:checked + span{color:var(--ink)}
 .seg label:has(input:checked){background:var(--accent-soft);color:var(--ink)}
 .seg label.si:has(input:checked){background:var(--bad-soft);color:var(--bad)}
 .seg label:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:-2px}
 
 .alert{border-radius:6px;padding:10px 14px;font-size:14px;display:flex;gap:10px;align-items:flex-start}
-.alert b{font-weight:700}
 .alert.ok{background:var(--ok-soft);color:var(--ok)}
 .alert.warn{background:var(--warn-soft);color:var(--warn)}
 .alert.bad{background:var(--bad-soft);color:var(--bad)}
 .alert .dot{width:8px;height:8px;border-radius:50%;background:currentColor;margin-top:7px;flex-shrink:0}
 .alerts{display:flex;flex-direction:column;gap:8px}
 
+/* Cronómetro */
+.timer{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);border:2px solid var(--ink);border-radius:8px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:6px 18px;align-items:center}
+.clock{font-family:var(--mono);font-weight:600;font-size:clamp(40px,10vw,56px);line-height:1;font-variant-numeric:tabular-nums;grid-row:span 2}
+.timer.running .clock{color:var(--accent)}
+.tinfo{display:flex;flex-direction:column;gap:6px;min-width:0}
+.tphase{font-weight:700;font-size:15px}
+.tmsg{font-size:13.5px;color:var(--muted)}
+.tbar{height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.tbar i{display:block;height:100%;width:0;background:var(--accent)}
+.timer .toolbar{grid-column:1 / -1;margin-top:6px}
+@media (max-width:480px){.timer{grid-template-columns:1fr}.clock{grid-row:auto}}
+
 .hr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:10px}
 .hr-grid label{font-family:var(--mono);font-weight:400}
+.hr-grid label.due{color:var(--accent);font-weight:600}
+.hr-grid label.due input{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
 .chart{overflow-x:auto}
 .chart svg{display:block;width:100%;min-width:320px;height:auto}
 
 .result{background:var(--paper);border:2px solid var(--ink);border-radius:8px;padding:22px;display:flex;flex-direction:column;gap:16px}
+#resBody{display:flex;flex-direction:column;gap:16px}
 .big{display:flex;flex-wrap:wrap;gap:24px;align-items:flex-end}
 .metric{display:flex;flex-direction:column;gap:2px}
 .metric .v{font-family:var(--display);font-weight:800;font-size:clamp(40px,8vw,60px);line-height:1;font-variant-numeric:tabular-nums}
@@ -95,17 +114,54 @@ input[type=number]{font-family:var(--mono);font-variant-numeric:tabular-nums}
 .scale{display:grid;grid-template-columns:repeat(5,1fr);gap:3px}
 .scale div{padding:8px 4px;text-align:center;font-size:12px;border-radius:4px;background:var(--bg);color:var(--muted);font-variant-numeric:tabular-nums}
 .scale div b{display:block;font-size:13px;color:var(--ink)}
-.scale div.on{background:var(--accent);color:var(--paper)}
-.scale div.on b{color:var(--paper)}
+.scale div.on{background:var(--accent);color:var(--on-accent)}
+.scale div.on b{color:var(--on-accent)}
 table.calc{width:100%;border-collapse:collapse;font-size:14px}
 table.calc td{padding:6px 0;border-bottom:1px solid var(--line);vertical-align:top}
 table.calc td:last-child{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap;padding-left:12px}
 .tablewrap{overflow-x:auto}
-pre.report{white-space:pre-wrap;font:13px/1.55 var(--mono);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:12px;margin:0;max-height:260px;overflow:auto}
+.interp{display:flex;flex-direction:column;gap:10px;max-width:72ch}
+.interp p{margin:0;font-size:14.5px}
+.interp b{color:var(--ink)}
+.actions{display:flex;flex-direction:column;gap:8px;padding-top:12px;border-top:1px solid var(--line)}
+pre.report{white-space:pre-wrap;font:13px/1.55 var(--mono);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:12px;margin:0;max-height:240px;overflow:auto}
 footer{color:var(--muted);font-size:13px;display:flex;flex-direction:column;gap:6px;max-width:70ch}
 footer p{margin:0}
 @media (max-width:480px){.yn{grid-template-columns:1fr}.scale div{font-size:11px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* Informe para imprimir / PDF */
+#printDoc{display:none}
+@page{size:A4;margin:14mm}
+@media print{
+  body{background:#fff;color:#000;font-size:11pt}
+  body::before{display:none}
+  .wrap{display:none}
+  #printDoc{display:block;color:#000;font-family:var(--body);line-height:1.45}
+  #printDoc h1{font-family:var(--display);font-size:20pt;margin:0 0 2pt}
+  #printDoc h3{font-family:var(--display);font-size:12.5pt;margin:14pt 0 5pt;padding-bottom:3pt;border-bottom:1.5pt solid #000;break-after:avoid}
+  #printDoc p{margin:0 0 5pt}
+  #printDoc .meta{font-size:9.5pt;color:#333;margin-bottom:8pt}
+  #printDoc table{width:100%;border-collapse:collapse;font-size:10pt;margin-bottom:6pt;break-inside:avoid}
+  #printDoc td,#printDoc th{border:0.75pt solid #999;padding:3pt 6pt;text-align:left;vertical-align:top}
+  #printDoc th{background:#eee}
+  #printDoc .num{font-family:var(--mono);color:#000;font-size:10pt}
+  #printDoc .box{border:1pt solid #000;padding:8pt 10pt;margin:6pt 0;break-inside:avoid}
+  #printDoc .bigres{display:flex;gap:28pt;align-items:flex-end;margin:4pt 0 8pt}
+  #printDoc .bigres b{font-family:var(--display);font-size:22pt;display:block;line-height:1}
+  #printDoc .bigres span{font-size:9pt;color:#333}
+  #printDoc{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #printDoc th.on,#printDoc td.on{background:#000;color:#fff;font-weight:700;border:1.5pt solid #000}
+  #printDoc .sigs{display:flex;gap:28pt;margin-top:10pt;break-inside:avoid}
+  #printDoc .sigs div{flex:1}
+  #printDoc .sigs img{height:60pt;display:block}
+  #printDoc .sigline{border-top:0.75pt solid #000;padding-top:2pt;font-size:9pt;margin-top:4pt}
+  #printDoc .flag{border-left:3pt solid #000;padding-left:6pt;font-size:10pt}
+  #printDoc ul{margin:0 0 5pt;padding-left:16pt}
+  #printDoc li{margin-bottom:2pt}
+  #printDoc .ref{font-size:9pt;color:#333}
+  #printDoc .consent-txt{font-size:9.5pt}
+}
 </style>
 
 </head>
@@ -114,34 +170,32 @@ footer p{margin:0}
   <header>
     <span class="eyebrow">Prueba submáxima · Cicloergómetro / step test</span>
     <h1>Test de Åstrand-Ryhming</h1>
-    <p class="lede">Consentimiento informado, checklist previa, registro de la frecuencia cardíaca minuto a minuto y cálculo del VO₂máx estimado con corrección por edad.</p>
+    <p class="lede">Consentimiento informado, tamizaje, checklist previa, cronómetro, registro de la frecuencia cardíaca y cálculo del VO₂máx estimado con su interpretación.</p>
     <div class="toolbar">
       <button type="button" id="btnNew" class="primary">Nueva evaluación</button>
-      <button type="button" id="btnExample">Cargar ejemplo</button>
     </div>
-    <span class="example-tag" id="exampleTag"><span>●</span> Datos de ejemplo cargados: reemplázalos por los de tu evaluado</span>
   </header>
 
   <!-- 1 -->
   <section class="step">
     <div class="step-head"><span class="num">01</span><h2>Datos del evaluado</h2></div>
     <div class="grid">
-      <label class="field">Nombre o código<input type="text" id="nombre" autocomplete="off"></label>
+      <label class="field">Nombre completo<input type="text" id="nombre" autocomplete="off"></label>
       <label class="field">Sexo<select id="sexo"><option value="F">Mujer</option><option value="M">Hombre</option></select></label>
-      <label class="field">Edad (años)<input type="number" id="edad" min="10" max="90" step="1"></label>
-      <label class="field">Peso (kg)<input type="number" id="peso" min="25" max="200" step="0.1"></label>
-      <label class="field">FC reposo (lpm)<input type="number" id="fcrep" min="30" max="140" step="1"></label>
-      <label class="field">PA sistólica (mmHg)<input type="number" id="pas" min="60" max="260" step="1"></label>
-      <label class="field">PA diastólica (mmHg)<input type="number" id="pad" min="30" max="160" step="1"></label>
+      <label class="field">Edad (años)<input type="number" id="edad" min="10" max="90" step="1" inputmode="numeric"></label>
+      <label class="field">Peso (kg)<input type="number" id="peso" min="25" max="200" step="0.1" inputmode="decimal"></label>
+      <label class="field">FC reposo (lpm)<input type="number" id="fcrep" min="30" max="140" step="1" inputmode="numeric"></label>
+      <label class="field">PA sistólica (mmHg)<input type="number" id="pas" min="60" max="260" step="1" inputmode="numeric"></label>
+      <label class="field">PA diastólica (mmHg)<input type="number" id="pad" min="30" max="160" step="1" inputmode="numeric"></label>
     </div>
   </section>
 
-  <!-- Consentimiento -->
+  <!-- 2 -->
   <section class="step">
     <div class="step-head"><span class="num">02</span><h2>Consentimiento informado</h2></div>
     <p class="hint">Lee el texto con el participante antes de cualquier medición. Es un modelo general; ajústalo a los requisitos de tu institución o comité de ética.</p>
     <div class="consent">
-      <p>Yo, <b id="consNombre">________</b>, identificado(a) con documento <b id="consDoc">________</b>, declaro que me explicaron lo siguiente sobre el <b>test de Åstrand-Ryhming</b>:</p>
+      <p>Yo, <input type="text" class="inline" id="consNombre" placeholder="nombre completo" aria-label="Nombre del participante" autocomplete="off">, identificado(a) con documento de identidad n.º <input type="text" class="inline" id="documento" placeholder="número" aria-label="Documento de identidad" autocomplete="off" inputmode="numeric">, declaro que me explicaron lo siguiente sobre el <b>test de Åstrand-Ryhming</b>:</p>
       <p><b>En qué consiste.</b> Pedalearé en una bicicleta estática, o subiré y bajaré un banco, a una intensidad moderada y constante durante unos 6 minutos mientras se registra mi frecuencia cardíaca. Antes se medirán mi presión arterial y mi frecuencia cardíaca en reposo. La prueba no busca llevarme al agotamiento.</p>
       <p><b>Para qué sirve.</b> Estima mi consumo máximo de oxígeno (VO₂máx), que refleja mi capacidad aeróbica. El resultado orienta la prescripción de ejercicio y el seguimiento de mi condición física. Es una estimación con un margen de error de ±10–15 %.</p>
       <p><b>Riesgos y molestias.</b> Puedo sentir cansancio, sudoración, falta de aire o dolor muscular en los días siguientes. Con poca frecuencia pueden presentarse mareo, cambios anormales de la presión arterial o del ritmo cardíaco, o dolor en el pecho. Para reducir estos riesgos se hace un tamizaje previo, se vigila la frecuencia cardíaca durante toda la prueba y se detiene ante cualquier síntoma de alarma.</p>
@@ -150,7 +204,6 @@ footer p{margin:0}
     <p class="subhead">El participante confirma</p>
     <div class="checks" id="chkCons"></div>
     <div class="grid">
-      <label class="field">Documento de identidad<input type="text" id="documento" autocomplete="off"></label>
       <label class="field">Evaluador responsable<input type="text" id="evaluador" autocomplete="off"></label>
       <label class="field">Fecha<input type="date" id="cfecha"></label>
     </div>
@@ -167,7 +220,7 @@ footer p{margin:0}
     <div class="alerts" id="consAlerts"></div>
   </section>
 
-  <!-- 2 -->
+  <!-- 3 -->
   <section class="step">
     <div class="step-head"><span class="num">03</span><h2>Tamizaje preejercicio</h2></div>
     <p class="hint">Preguntas basadas en el PAR-Q+. Una respuesta "Sí" indica que se requiere valoración médica antes de la prueba.</p>
@@ -175,7 +228,7 @@ footer p{margin:0}
     <div class="alerts" id="screenAlerts"></div>
   </section>
 
-  <!-- 3 -->
+  <!-- 4 -->
   <section class="step">
     <div class="step-head"><span class="num">04</span><h2>Checklist de preparación</h2></div>
     <p class="subhead">Evaluado</p>
@@ -185,7 +238,7 @@ footer p{margin:0}
     <div class="alerts" id="prepAlert"></div>
   </section>
 
-  <!-- 4 -->
+  <!-- 5 -->
   <section class="step">
     <div class="step-head"><span class="num">05</span><h2>Protocolo y carga</h2></div>
     <div class="grid">
@@ -196,16 +249,29 @@ footer p{margin:0}
           <option value="vo2">VO₂ medido directamente</option>
         </select>
       </label>
-      <label class="field" id="fCarga">Carga (W)<input type="number" id="carga" min="10" max="400" step="5"></label>
-      <label class="field" id="fVo2" hidden>VO₂ submáximo medido (L/min)<input type="number" id="vo2" min="0.3" max="5" step="0.01"></label>
+      <label class="field" id="fCarga">Carga (W)<input type="number" id="carga" min="10" max="400" step="5" inputmode="numeric"></label>
+      <label class="field" id="fVo2" hidden>VO₂ submáximo medido (L/min)<input type="number" id="vo2" min="0.3" max="5" step="0.01" inputmode="decimal"></label>
     </div>
     <p class="hint" id="cargaHint"></p>
   </section>
 
-  <!-- 5 -->
+  <!-- 6 -->
   <section class="step">
-    <div class="step-head"><span class="num">06</span><h2>Frecuencia cardíaca durante la prueba</h2></div>
-    <p class="hint">Registra la FC al final de cada minuto. Si la diferencia entre los dos últimos minutos es mayor de 5 lpm, añade minutos hasta lograr el estado estable.</p>
+    <div class="step-head"><span class="num">06</span><h2>Cronómetro y frecuencia cardíaca</h2></div>
+    <p class="hint">Inicia el cronómetro cuando el evaluado empiece a pedalear. Al final de cada minuto suena un aviso y se resalta la casilla donde debes anotar la FC.</p>
+    <div class="timer" id="timer">
+      <div class="clock" id="tClock">00:00</div>
+      <div class="tinfo">
+        <span class="tphase" id="tPhase">Listo para iniciar</span>
+        <div class="tbar" aria-hidden="true"><i id="tBar"></i></div>
+        <span class="tmsg" id="tMsg">Duración mínima: 6 minutos.</span>
+      </div>
+      <div class="toolbar">
+        <button type="button" class="primary" id="tStartBtn">Iniciar</button>
+        <button type="button" id="tResetBtn">Reiniciar</button>
+        <label class="check" style="padding:4px 6px"><input type="checkbox" id="tSound" checked><span>Sonido</span></label>
+      </div>
+    </div>
     <div class="hr-grid" id="hrGrid"></div>
     <div class="toolbar">
       <button type="button" id="btnAddMin">Añadir minuto</button>
@@ -217,18 +283,21 @@ footer p{margin:0}
 
   <!-- Resultado -->
   <section class="result" aria-live="polite">
-    <div class="step-head"><span class="num">07</span><h2>Resultado</h2></div>
+    <div class="step-head"><span class="num">07</span><h2>Resultado e interpretación</h2></div>
     <div id="resBody"></div>
   </section>
 
   <footer>
     <p><b>Método.</b> El VO₂máx se obtiene con las rectas FC–%VO₂máx de la figura 1 de Åstrand y Ryhming (1954), que son la base del nomograma: 50 % del VO₂máx corresponde a 128 lpm en hombres y 138 en mujeres, y 70 % a 154 y 164 lpm. En cicloergómetro el VO₂ submáximo se estima con la eficiencia mecánica del nomograma (800 kgm/min ≈ 1,91 L/min). En step test se usa el peso corporal con banco de 40 cm (hombres) o 33 cm (mujeres).</p>
-    <p><b>Corrección por edad</b> según Åstrand (1960). <b>Clasificación</b> según las tablas normativas de Åstrand por sexo y edad. El error individual del método es de ±10–15 %; valida en población sana.</p>
+    <p><b>Corrección por edad</b> según Åstrand (1960). <b>Clasificación</b> según las tablas normativas de Åstrand por sexo y edad. El error individual del método es de ±10–15 %.</p>
   </footer>
 </div>
 
+<div id="printDoc"></div>
+
 <script>
 const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 const PARQ = [
   "¿Algún médico le ha dicho que tiene una enfermedad cardíaca o presión arterial alta?",
@@ -240,6 +309,7 @@ const PARQ = [
   "¿Algún médico le ha indicado que solo haga actividad física con supervisión médica?",
   "¿Tiene fiebre, infección o alguna enfermedad aguda en este momento?"
 ];
+const BETA = "¿Toma betabloqueadores u otro fármaco que modifique la frecuencia cardíaca?";
 const CONS = [
   "Me explicaron en qué consiste la prueba y para qué sirve",
   "Entiendo los riesgos y molestias posibles",
@@ -247,7 +317,6 @@ const CONS = [
   "Informé con veracidad mis condiciones de salud y medicamentos",
   "Pude hacer preguntas y me las resolvieron"
 ];
-const BETA ="¿Toma betabloqueadores u otro fármaco que modifique la frecuencia cardíaca?";
 const PAC = ["Sin ejercicio intenso en las últimas 24 h","Sin comida pesada en las últimas 2–3 h","Sin cafeína ni tabaco en las últimas 2–3 h","Ropa y calzado adecuados","Conoce el protocolo y los signos para detener la prueba"];
 const EQ = ["Sillín ajustado (rodilla con 5–10° de flexión abajo)","Pulsómetro colocado y con señal estable","Ergómetro calibrado y carga verificada","Metrónomo listo (50 rpm o 90 golpes/min en step)","Cronómetro y planilla de registro listos"];
 
@@ -265,16 +334,22 @@ function renderStatic(){
   $("chkEq").innerHTML = chk(EQ,"e");
 }
 
-let nMin = 6;
+/* ---------- FC por minuto ---------- */
+let nMin = 6, dueIdx = -1;
 function renderHR(vals){
   const keep = vals || readHR();
   $("hrGrid").innerHTML = Array.from({length:nMin},(_,i)=>`
-    <label class="field">Min ${i+1}<input type="number" id="hr${i}" min="50" max="220" step="1" value="${keep[i] ?? ""}"></label>`).join("");
+    <label class="field${i===dueIdx?" due":""}" id="hrl${i}">Min ${i+1}<input type="number" id="hr${i}" min="50" max="220" step="1" inputmode="numeric" value="${keep[i] ?? ""}"></label>`).join("");
   $("btnDelMin").disabled = nMin<=6;
   $("btnAddMin").disabled = nMin>=12;
 }
 function readHR(){ const a=[]; for(let i=0;i<12;i++){const el=$("hr"+i); a.push(el && el.value!=="" ? +el.value : null);} return a; }
+function setDue(i){
+  dueIdx=i;
+  document.querySelectorAll(".hr-grid label").forEach((l,k)=>l.classList.toggle("due",k===i));
+}
 
+/* ---------- Cálculo ---------- */
 const AGE = [[15,1.10],[25,1.00],[35,0.87],[40,0.83],[45,0.78],[50,0.75],[55,0.71],[60,0.68],[65,0.65]];
 function ageFactor(a){
   if(a<=AGE[0][0]) return AGE[0][1];
@@ -287,41 +362,53 @@ const NORM = {
   M:[[29,[39,44,52,57]],[39,[35,40,48,52]],[49,[31,36,44,48]],[59,[26,32,40,44]],[99,[22,27,36,40]]]
 };
 const CATS = ["Bajo","Regular","Promedio","Bueno","Alto"];
+const CAT_TXT = [
+  "La capacidad aeróbica está por debajo de lo esperado para su edad y sexo. Åstrand y Ryhming señalan que una disminución de la capacidad aeróbica puede ser uno de los primeros signos de enfermedad, por lo que este valor justifica valoración clínica y un plan de entrenamiento aeróbico progresivo y supervisado.",
+  "La capacidad aeróbica está ligeramente por debajo del promedio para su edad y sexo. Hay margen de mejora con entrenamiento aeróbico regular.",
+  "La capacidad aeróbica está en el rango esperado para su edad y sexo.",
+  "La capacidad aeróbica está por encima del promedio para su edad y sexo, compatible con una persona físicamente activa.",
+  "La capacidad aeróbica es alta para su edad y sexo, propia de personas con entrenamiento aeróbico."
+];
 function classify(sex,age,rel){
   const row = NORM[sex].find(r=>age<=r[0]); const c=row[1];
   let k=0; c.forEach((lim,i)=>{ if(rel>=lim) k=i+1; });
   const ranges = [`< ${c[0]}`,`${c[0]}–${c[1]-1}`,`${c[1]}–${c[2]-1}`,`${c[2]}–${c[3]-1}`,`≥ ${c[3]}`];
   return {k,ranges};
 }
+const f0 = x=>Math.round(x).toLocaleString("es-CO");
 const f1 = x=>x.toLocaleString("es-CO",{minimumFractionDigits:1,maximumFractionDigits:1});
 const f2 = x=>x.toLocaleString("es-CO",{minimumFractionDigits:2,maximumFractionDigits:2});
+const fdate = s=>{ if(!s) return "—"; const [y,m,d]=s.split("-"); return `${d}/${m}/${y}`; };
 const alertHTML = (cls,html)=>`<div class="alert ${cls}"><span class="dot"></span><span>${html}</span></div>`;
+
+let R = null; // último resultado calculado
 
 function update(){
   const sex=$("sexo").value, edad=+$("edad").value, peso=+$("peso").value, modo=$("modo").value;
   const pas=+$("pas").value, pad=+$("pad").value;
+  const nombre=$("nombre").value.trim(), doc=$("documento").value.trim();
 
   // Consentimiento
   let cdone=0; CONS.forEach((_,i)=>$("c"+i).checked&&cdone++);
   const acepta=$("consSi").checked, rechaza=$("consNo").checked;
   const evaluador=$("evaluador").value.trim(), cfecha=$("cfecha").value;
-  $("consNombre").textContent = $("nombre").value.trim() || "________";
-  $("consDoc").textContent = $("documento").value.trim() || "________";
   const ca=[];
   if(rechaza) ca.push(alertHTML("bad","<b>El participante no acepta.</b> No realizar la prueba."));
   else{
+    if(!nombre || !doc) ca.push(alertHTML("warn","Escribe el nombre y el documento del participante en el texto del consentimiento."));
     if(cdone<CONS.length) ca.push(alertHTML("warn",`<b>${cdone}/${CONS.length}</b> puntos confirmados por el participante.`));
     if(!acepta) ca.push(alertHTML("warn","Falta registrar la decisión del participante."));
-    if(!sigDrawn) ca.push(alertHTML("warn","Falta la firma del participante."));
+    if(!sig.drawn) ca.push(alertHTML("warn","Falta la firma del participante."));
     if(!evaluador) ca.push(alertHTML("warn","Falta el nombre del evaluador responsable."));
     if(!ca.length) ca.push(alertHTML("ok","<b>Consentimiento completo.</b> Puedes continuar con el tamizaje."));
   }
   $("consAlerts").innerHTML = ca.join("");
-  const consentOK = acepta && cdone===CONS.length && sigDrawn && !!evaluador;
+  const consentOK = acepta && cdone===CONS.length && sig.drawn && !!evaluador && !!nombre && !!doc;
 
   // Tamizaje
-  const sa=[]; let parqYes=0, unanswered=0;
-  PARQ.forEach((_,i)=>{ if($(`q${i}s`).checked) parqYes++; else if(!$(`q${i}n`).checked) unanswered++; });
+  const sa=[]; let unanswered=0; const parqSi=[];
+  PARQ.forEach((q,i)=>{ if($(`q${i}s`).checked) parqSi.push(q); else if(!$(`q${i}n`).checked) unanswered++; });
+  const parqYes=parqSi.length;
   const beta = $(`q${PARQ.length}s`).checked; if(!beta && !$(`q${PARQ.length}n`).checked) unanswered++;
   if(parqYes) sa.push(alertHTML("bad",`<b>${parqYes} respuesta${parqYes>1?"s":""} afirmativa${parqYes>1?"s":""}.</b> Requiere valoración médica antes de realizar la prueba.`));
   if(beta) sa.push(alertHTML("bad","<b>Fármaco cronotrópico.</b> La relación FC–VO₂ está alterada; el resultado del test no es válido."));
@@ -338,41 +425,45 @@ function update(){
 
   // Carga
   $("fCarga").hidden = modo!=="ciclo"; $("fVo2").hidden = modo!=="vo2";
-  let vo2sub=null, cargaTxt="";
+  let vo2sub=null, cargaTxt="", modoTxt="";
   if(modo==="ciclo"){
     const w=+$("carga").value; const kgm=w*6.12;
-    if(w>0){ vo2sub = kgm*0.00239; cargaTxt=`${w} W = ${Math.round(kgm)} kgm/min → VO₂ estimado ${f2(vo2sub)} L/min.`; }
+    modoTxt = `Cicloergómetro a 50 rpm, ${w||"—"} W (${w?f0(kgm):"—"} kgm/min)`;
+    if(w>0){ vo2sub = kgm*0.00239; cargaTxt=`${w} W = ${f0(kgm)} kgm/min → VO₂ estimado ${f2(vo2sub)} L/min.`; }
     cargaTxt += ` Carga sugerida: ${sex==="F"?"50–75 W (poco entrenada) o 75–100 W (entrenada)":"75–100 W (poco entrenado) o 100–150 W (entrenado)"}.`;
   } else if(modo==="step"){
     const h = sex==="M"?40:33;
+    modoTxt = `Step test, banco de ${h} cm, 22,5 subidas/min`;
     if(peso>0){ vo2sub = peso*(sex==="M"?0.0308:0.0251); cargaTxt=`Banco de ${h} cm, 22,5 subidas/min, ${f1(peso)} kg → VO₂ estimado ${f2(vo2sub)} L/min.`; }
     else cargaTxt=`Banco de ${h} cm, 22,5 subidas/min. Ingresa el peso del evaluado.`;
   } else {
-    const v=+$("vo2").value; if(v>0) vo2sub=v; cargaTxt="Usa el VO₂ promedio del último minuto medido con analizador de gases.";
+    const v=+$("vo2").value; if(v>0) vo2sub=v;
+    modoTxt = `VO₂ submáximo medido con analizador de gases (${v?f2(v):"—"} L/min)`;
+    cargaTxt="Usa el VO₂ promedio del último minuto medido con analizador de gases.";
   }
   $("cargaHint").textContent = cargaTxt.trim();
 
   // FC
   const hr = readHR().slice(0,nMin);
-  const filled = hr.filter(v=>v!=null);
   const ha=[]; let hrWork=null, steady=false;
   const last=hr[nMin-1], prev=hr[nMin-2];
   if(last!=null && prev!=null){
     hrWork=(last+prev)/2; steady=Math.abs(last-prev)<=5;
     ha.push(steady?alertHTML("ok",`<b>Estado estable.</b> Min ${nMin-1}: ${prev} lpm · Min ${nMin}: ${last} lpm (diferencia ${Math.abs(last-prev)} lpm).`)
-                  :alertHTML("warn",`<b>Sin estado estable.</b> Diferencia de ${Math.abs(last-prev)} lpm entre los dos últimos minutos. Añade un minuto más.`));
+                  :alertHTML("warn",`<b>Sin estado estable.</b> Diferencia de ${Math.abs(last-prev)} lpm entre los dos últimos minutos. Continúa un minuto más.`));
     if(hrWork<125) ha.push(alertHTML("warn",`<b>FC de trabajo ${f1(hrWork)} lpm, por debajo de 125.</b> Aumenta la carga y repite 6 minutos.`));
     else if(hrWork>170) ha.push(alertHTML("bad",`<b>FC de trabajo ${f1(hrWork)} lpm, por encima de 170.</b> Carga excesiva; repite otro día con menos carga.`));
     else ha.push(alertHTML("ok",`<b>FC de trabajo ${f1(hrWork)} lpm</b>, dentro del rango válido (125–170).`));
   } else ha.push(alertHTML("warn",`Registra la FC de los minutos ${nMin-1} y ${nMin} para calcular.`));
   $("hrAlerts").innerHTML = ha.join("");
-  drawChart(hr);
+  $("hrChart").innerHTML = chartSVG(hr);
 
   // Resultado
+  R = null;
   const missing=[];
   if(!(edad>0)) missing.push("edad"); if(!(peso>0)) missing.push("peso");
-  if(vo2sub==null) missing.push(modo==="vo2"?"VO₂ medido":"carga"); if(hrWork==null) missing.push("FC de los dos últimos minutos");
-  if(missing.length){ $("resBody").innerHTML = `<p class="hint">Completa: ${missing.join(", ")}.</p>`; return; }
+  if(vo2sub==null) missing.push(modo==="vo2"?"VO₂ medido":"carga"); if(hrWork==null) missing.push(`FC de los minutos ${nMin-1} y ${nMin}`);
+  if(missing.length){ $("resBody").innerHTML = `<p class="hint">Para ver el resultado completa: ${missing.join(", ")}.</p>`; return; }
 
   const a = sex==="M"?63:73;
   const frac=(hrWork-a)/130;
@@ -381,21 +472,25 @@ function update(){
   const {k,ranges}=classify(sex,edad,rel);
 
   const flags=[];
-  if(rechaza) flags.push(alertHTML("bad","El participante no aceptó el consentimiento informado: la prueba no debía realizarse."));
-  else if(!consentOK) flags.push(alertHTML("warn","El consentimiento informado está incompleto."));
-  if(parqYes||beta||pas>=200||pad>=110) flags.push(alertHTML("bad","El tamizaje tiene hallazgos que contraindican la prueba o invalidan el resultado."));
-  if(!steady) flags.push(alertHTML("warn","No se alcanzó estado estable: interpreta el resultado con cautela."));
-  if(hrWork<125||hrWork>170) flags.push(alertHTML("warn","FC de trabajo fuera de 125–170: la estimación pierde precisión."));
-  if(edad<15||edad>65) flags.push(alertHTML("warn","Edad fuera del rango de la tabla de corrección (15–65 años)."));
-  if(done<total) flags.push(alertHTML("warn","La checklist de preparación no está completa."));
+  if(rechaza) flags.push(["bad","El participante no aceptó el consentimiento informado: la prueba no debía realizarse."]);
+  else if(!consentOK) flags.push(["warn","El consentimiento informado está incompleto."]);
+  if(parqYes||beta||pas>=200||pad>=110) flags.push(["bad","El tamizaje tiene hallazgos que contraindican la prueba o invalidan el resultado."]);
+  if(!steady) flags.push(["warn","No se alcanzó estado estable: interpreta el resultado con cautela."]);
+  if(hrWork<125||hrWork>170) flags.push(["warn","FC de trabajo fuera de 125–170: la estimación pierde precisión."]);
+  if(edad<15||edad>65) flags.push(["warn","Edad fuera del rango de la tabla de corrección (15–65 años)."]);
+  if(done<total) flags.push(["warn","La checklist de preparación no está completa."]);
+
+  R = {nombre,doc,sex,edad,peso,fcrep:$("fcrep").value,pas,pad,modo,modoTxt,evaluador,cfecha,acepta,rechaza,consentOK,cdone,
+       parqSi,beta,unanswered,done,total,hr,hrWork,steady,vo2sub,frac,raw,fac,abs,rel,k,ranges,flags};
+  R.interp = interpret(R);
 
   const report = [
-    `TEST DE ÅSTRAND-RYHMING`,
-    `Evaluado: ${$("nombre").value||"—"} · Doc. ${$("documento").value||"—"} · ${sex==="M"?"Hombre":"Mujer"} · ${edad} años · ${f1(peso)} kg`,
-    `Consentimiento informado: ${consentOK?`firmado${cfecha?` el ${cfecha}`:""}`:rechaza?"NO aceptado":"incompleto"} · Evaluador: ${evaluador||"—"}`,
-    `Reposo: FC ${$("fcrep").value||"—"} lpm · PA ${pas||"—"}/${pad||"—"} mmHg`,
-    `Modalidad: ${modo==="ciclo"?`Cicloergómetro, ${$("carga").value} W`:modo==="step"?`Step test, banco ${sex==="M"?40:33} cm`:"VO₂ medido"}`,
-    `FC por minuto: ${filled.join(", ")} lpm`,
+    `TEST DE ÅSTRAND-RYHMING · ${fdate(cfecha)}`,
+    `Evaluado: ${nombre||"—"} · Doc. ${doc||"—"} · ${sex==="M"?"Hombre":"Mujer"} · ${edad} años · ${f1(peso)} kg`,
+    `Consentimiento informado: ${consentOK?"firmado":rechaza?"NO aceptado":"incompleto"} · Evaluador: ${evaluador||"—"}`,
+    `Reposo: FC ${R.fcrep||"—"} lpm · PA ${pas||"—"}/${pad||"—"} mmHg`,
+    `Modalidad: ${modoTxt}`,
+    `FC por minuto: ${hr.map(v=>v??"—").join(", ")} lpm`,
     `FC de trabajo: ${f1(hrWork)} lpm (${steady?"estado estable":"sin estado estable"})`,
     `VO₂ submáximo: ${f2(vo2sub)} L/min (${Math.round(frac*100)} % del VO₂máx)`,
     `VO₂máx sin corregir: ${f2(raw)} L/min · factor edad ${f2(fac)}`,
@@ -410,8 +505,8 @@ function update(){
       <div class="metric"><span class="k">Clasificación</span><span class="pill">${CATS[k]}</span></div>
     </div>
     <div class="scale" aria-label="Tabla normativa">${CATS.map((c,i)=>`<div class="${i===k?"on":""}"><b>${c}</b>${ranges[i]}</div>`).join("")}</div>
-    <p class="hint">Rangos para ${sex==="M"?"hombres":"mujeres"} de ${edad} años, en ml/kg/min.</p>
-    ${flags.length?`<div class="alerts">${flags.join("")}</div>`:""}
+    <p class="hint">Rangos para ${sex==="M"?"hombres":"mujeres"} de ${edad} años, en ml/kg/min (Åstrand).</p>
+    ${flags.length?`<div class="alerts">${flags.map(f=>alertHTML(f[0],f[1])).join("")}</div>`:""}
     <div class="tablewrap"><table class="calc"><tbody>
       <tr><td>FC de trabajo (promedio de los dos últimos minutos)</td><td>${f1(hrWork)} lpm</td></tr>
       <tr><td>VO₂ submáximo</td><td>${f2(vo2sub)} L/min</td></tr>
@@ -420,74 +515,234 @@ function update(){
       <tr><td>Factor de corrección por edad</td><td>× ${f2(fac)}</td></tr>
       <tr><td>VO₂máx corregido ÷ peso</td><td>${f2(abs)} L/min ÷ ${f1(peso)} kg</td></tr>
     </tbody></table></div>
-    <div style="display:flex;flex-direction:column;gap:8px">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
-        <span class="subhead" style="margin:0">Informe</span>
-        <button type="button" id="btnCopy">Copiar informe</button>
+    <p class="subhead" style="margin:0">Interpretación</p>
+    <div class="interp">${R.interp.map(p=>`<p><b>${p[0]}.</b> ${p[1]}</p>`).join("")}</div>
+    <div class="actions">
+      <div class="toolbar">
+        <button type="button" class="primary" id="btnPrint">Imprimir o guardar en PDF</button>
+        <button type="button" id="btnCopy">Copiar resumen</button>
       </div>
-      <pre class="report" id="report">${report}</pre>
+      <p class="hint">El informe incluye los datos, el consentimiento con la firma, el registro de FC, el resultado y su interpretación. Para obtener el PDF, elige "Guardar como PDF" en la ventana de impresión.</p>
+      <pre class="report" id="report">${esc(report)}</pre>
     </div>`;
+  $("btnPrint").onclick = ()=>{ $("printDoc").innerHTML = buildPrint(R); window.print(); };
   $("btnCopy").onclick = async ()=>{
     try{ await navigator.clipboard.writeText(report); $("btnCopy").textContent="Copiado"; }
     catch(e){ const r=document.createRange(); r.selectNodeContents($("report")); const s=getSelection(); s.removeAllRanges(); s.addRange(r); $("btnCopy").textContent="Texto seleccionado"; }
-    setTimeout(()=>{ if($("btnCopy")) $("btnCopy").textContent="Copiar informe"; },1800);
+    setTimeout(()=>{ if($("btnCopy")) $("btnCopy").textContent="Copiar resumen"; },1800);
   };
 }
 
-function drawChart(hr){
-  const W=640,H=200,L=40,R=12,T=12,B=28;
-  const lo=90, hi=190, n=nMin;
-  const x=i=>L+(W-L-R)*(n===1?0:i/(n-1)), y=v=>T+(H-T-B)*(1-(v-lo)/(hi-lo));
-  const pts=hr.map((v,i)=>v!=null?[x(i),y(Math.max(lo,Math.min(hi,v)))]:null).filter(Boolean);
-  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Frecuencia cardíaca por minuto">`;
-  s+=`<rect x="${L}" y="${y(170)}" width="${W-L-R}" height="${y(125)-y(170)}" fill="var(--accent-soft)"/>`;
-  [100,125,150,170,190].forEach(v=>{ s+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${y(v)+4}" text-anchor="end" font-size="11" font-family="var(--mono)" fill="var(--muted)">${v}</text>`; });
-  for(let i=0;i<n;i++) s+=`<text x="${x(i)}" y="${H-8}" text-anchor="middle" font-size="11" font-family="var(--mono)" fill="var(--muted)">${i+1}</text>`;
-  s+=`<text x="${W-R}" y="${y(170)+14}" text-anchor="end" font-size="11" fill="var(--accent)">rango válido 125–170</text>`;
-  if(pts.length>1) s+=`<polyline points="${pts.map(p=>p.join(",")).join(" ")}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round"/>`;
-  pts.forEach((p,i)=>{ s+=`<circle cx="${p[0]}" cy="${p[1]}" r="${i===pts.length-1?5:3.5}" fill="${i===pts.length-1?"var(--accent)":"var(--paper)"}" stroke="var(--accent)" stroke-width="2"/>`; });
-  s+=`</svg>`;
-  $("hrChart").innerHTML=s;
+function interpret(R){
+  const sexo = R.sex==="M"?"hombre":"mujer";
+  const high = R.hrWork>=150;
+  const err = R.modo==="step" ? 7 : (R.sex==="M" ? (high?6.7:10.4) : (high?9.4:14.4));
+  const lo = R.rel*(1-err/100), hi = R.rel*(1+err/100);
+  const p50 = R.abs*0.5;
+  const out = [];
+  out.push(["Resultado", `El VO₂máx estimado es de ${f1(R.rel)} ml/kg/min (${f2(R.abs)} L/min), que corresponde a una capacidad aeróbica <b>${CATS[R.k].toLowerCase()}</b> para una ${sexo==="hombre"?"persona de sexo masculino":"persona de sexo femenino"} de ${R.edad} años. ${CAT_TXT[R.k]}`]);
+  out.push(["Por qué se expresa por kilo", "Åstrand y Ryhming proponen el VO₂máx por kilogramo de peso corporal como el mejor indicador de la condición física, porque la capacidad aeróbica absoluta depende de la masa muscular."]);
+  out.push(["Precisión de la estimación", R.modo==="step"
+    ? `En el artículo, el step test y la banda sin fin estimaron el VO₂máx con un error menor de 7 % (desviación estándar). Con ese margen, el VO₂máx real de este evaluado probablemente está entre ${f1(lo)} y ${f1(hi)} ml/kg/min.`
+    : `La FC de trabajo fue de ${f1(R.hrWork)} lpm. En el artículo, las cargas que producen FC más altas dieron estimaciones más precisas que las cargas bajas (error de 6,7 % frente a 10,4 % en hombres y de 9,4 % frente a 14,4 % en mujeres). Con una FC de trabajo ${high?"de 150 lpm o más, se toma el error de las cargas altas":"menor de 150 lpm, se toma el error de las cargas bajas"} (${String(err).replace(".",",")} %): el VO₂máx real probablemente está entre ${f1(lo)} y ${f1(hi)} ml/kg/min.`]);
+  out.push(["Intensidad de la prueba", `La carga de la prueba representó aproximadamente el ${Math.round(R.frac*100)} % del VO₂máx. El método asume una relación lineal entre la FC y el consumo de O₂ en este rango submáximo y una FC máxima similar entre personas (cerca de 195 lpm).`]);
+  out.push(["Corrección por edad", `El nomograma se construyó con sujetos de 18 a 30 años y asume una FC máxima de unos 195 lpm. Se aplicó el factor de corrección por edad de Åstrand (1960) de ${f2(R.fac)}${(R.edad<18||R.edad>30)?"; por estar fuera del rango de edad de la validación original, el resultado depende de esta corrección":""}.`]);
+  out.push(["Aplicación práctica", `Los autores proponen que el trabajo físico prolongado con grandes grupos musculares no supere el 50 % del VO₂máx. Para este evaluado equivale a unos ${f2(p50)} L/min de O₂, cerca de ${f1(p50*5)} kcal/min.`]);
+  out.push(["Factores que alteran el resultado", "El calor, la deshidratación, la ansiedad, la fatiga, la cafeína y los fármacos que modifican la FC elevan o reducen la frecuencia cardíaca sin cambiar el consumo de O₂, y por tanto subestiman o sobrestiman el VO₂máx. Para hacer seguimiento, repite la prueba con la misma modalidad, la misma carga y en condiciones similares."]);
+  out.push(["Alcance", "Es una prueba de tamizaje y seguimiento con un error individual de ±10–15 %. No reemplaza la medición directa del VO₂máx con ergoespirometría y fue validada en personas sanas."]);
+  return out;
 }
 
-// Firma
-const sig=$("sig"), sctx=sig.getContext("2d"); let sigDrawn=false, drawing=false;
-function sigPos(e){const r=sig.getBoundingClientRect();return [(e.clientX-r.left)*sig.width/r.width,(e.clientY-r.top)*sig.height/r.height];}
-function sigStyle(){sctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue("--ink").trim()||"#14262b";sctx.lineWidth=2.5;sctx.lineCap="round";sctx.lineJoin="round";}
-sig.addEventListener("pointerdown",e=>{e.preventDefault();drawing=true;try{sig.setPointerCapture(e.pointerId);}catch(_){}sigStyle();const [x,y]=sigPos(e);sctx.beginPath();sctx.moveTo(x,y);});
-sig.addEventListener("pointermove",e=>{if(!drawing)return;const [x,y]=sigPos(e);sctx.lineTo(x,y);sctx.stroke();sigDrawn=true;});
-const endDraw=()=>{if(drawing){drawing=false;update();}};
-sig.addEventListener("pointerup",endDraw);sig.addEventListener("pointercancel",endDraw);
-function clearSig(){sctx.clearRect(0,0,sig.width,sig.height);sigDrawn=false;}
-function sampleSig(){clearSig();sigStyle();sctx.beginPath();for(let t=0;t<=1.0001;t+=0.01){const x=70+t*420,y=95+Math.sin(t*17)*24*(1-t*0.5);t===0?sctx.moveTo(x,y):sctx.lineTo(x,y);}sctx.stroke();sigDrawn=true;}
-$("btnSigClear").onclick=()=>{clearSig();update();};
+function chartSVG(hr, forPrint){
+  const W=640,H=200,L=40,R0=12,T=12,B=28;
+  const lo=90, hi=190, n=hr.length;
+  const ink = forPrint?"#000":"var(--accent)", grid=forPrint?"#bbb":"var(--line)", txt=forPrint?"#333":"var(--muted)", band=forPrint?"#eee":"var(--accent-soft)", dotfill=forPrint?"#fff":"var(--paper)";
+  const x=i=>L+(W-L-R0)*(n===1?0:i/(n-1)), y=v=>T+(H-T-B)*(1-(v-lo)/(hi-lo));
+  const pts=hr.map((v,i)=>v!=null?[x(i),y(Math.max(lo,Math.min(hi,v)))]:null).filter(Boolean);
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Frecuencia cardíaca por minuto" style="width:100%;height:auto">`;
+  s+=`<rect x="${L}" y="${y(170)}" width="${W-L-R0}" height="${y(125)-y(170)}" fill="${band}"/>`;
+  [100,125,150,170,190].forEach(v=>{ s+=`<line x1="${L}" x2="${W-R0}" y1="${y(v)}" y2="${y(v)}" stroke="${grid}" stroke-width="1"/><text x="${L-6}" y="${y(v)+4}" text-anchor="end" font-size="11" font-family="monospace" fill="${txt}">${v}</text>`; });
+  for(let i=0;i<n;i++) s+=`<text x="${x(i)}" y="${H-8}" text-anchor="middle" font-size="11" font-family="monospace" fill="${txt}">${i+1}</text>`;
+  s+=`<text x="${W-R0}" y="${y(170)+14}" text-anchor="end" font-size="11" fill="${txt}">rango válido 125–170 lpm</text>`;
+  if(pts.length>1) s+=`<polyline points="${pts.map(p=>p.join(",")).join(" ")}" fill="none" stroke="${ink}" stroke-width="2.5" stroke-linejoin="round"/>`;
+  pts.forEach((p,i)=>{ s+=`<circle cx="${p[0]}" cy="${p[1]}" r="${i===pts.length-1?5:3.5}" fill="${i===pts.length-1?ink:dotfill}" stroke="${ink}" stroke-width="2"/>`; });
+  return s+`</svg>`;
+}
 
-const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;};
-const EXAMPLE = {nombre:"Ejemplo — mujer 40 años",documento:"0000000",evaluador:"Evaluador de ejemplo",sexo:"F",edad:40,peso:60,fcrep:68,pas:118,pad:74,modo:"ciclo",carga:100,vo2:"",hr:[112,128,139,145,148,150]};
-function load(d){
-  ["nombre","documento","evaluador","sexo","edad","peso","fcrep","pas","pad","modo","carga","vo2"].forEach(k=>$(k).value=d[k]??"");
-  $("cfecha").value=today();
-  document.querySelectorAll('#parq input, .checks input, #consDec input').forEach(el=>el.checked=false);
-  clearSig();
-  if(d.example){
-    for(let i=0;i<=PARQ.length;i++) $(`q${i}n`).checked=true;
-    document.querySelectorAll('.checks input').forEach(el=>el.checked=true);
-    $("consSi").checked=true; sampleSig();
+function buildPrint(R){
+  const sexo = R.sex==="M"?"Hombre":"Mujer";
+  const sigImg = sig.drawn ? `<img src="${sig.export()}" alt="Firma del participante">` : `<div style="height:60pt"></div>`;
+  const consentTxt = [...document.querySelectorAll(".consent p")].slice(1).map(p=>`<p>${p.innerHTML}</p>`).join("");
+  const flags = R.flags.length ? R.flags.map(f=>`<p class="flag">${f[1]}</p>`).join("") : `<p class="flag">Sin alertas: prueba realizada dentro de los criterios del protocolo.</p>`;
+  return `
+  <h1>Test de Åstrand-Ryhming</h1>
+  <p class="meta">Informe de capacidad aeróbica estimada · Fecha: ${fdate(R.cfecha)} · Evaluador: ${esc(R.evaluador||"—")}</p>
+
+  <h3>1. Datos del evaluado</h3>
+  <table>
+    <tr><th>Nombre</th><td>${esc(R.nombre||"—")}</td><th>Documento</th><td>${esc(R.doc||"—")}</td></tr>
+    <tr><th>Sexo</th><td>${sexo}</td><th>Edad</th><td>${R.edad} años</td></tr>
+    <tr><th>Peso</th><td>${f1(R.peso)} kg</td><th>FC en reposo</th><td>${R.fcrep||"—"} lpm</td></tr>
+    <tr><th>PA en reposo</th><td colspan="3">${R.pas||"—"}/${R.pad||"—"} mmHg</td></tr>
+  </table>
+
+  <h3>2. Consentimiento informado</h3>
+  <div class="consent-txt">
+    <p>Yo, <b>${esc(R.nombre||"________________")}</b>, identificado(a) con documento de identidad n.º <b>${esc(R.doc||"__________")}</b>, declaro que me explicaron lo siguiente sobre el test de Åstrand-Ryhming:</p>
+    ${consentTxt}
+    <p>Confirmo que: ${CONS.map((c,i)=>`${$("c"+i).checked?"☑":"☐"} ${c.charAt(0).toLowerCase()+c.slice(1)}`).join("; ")}.</p>
+    <p><b>Decisión:</b> ${R.acepta?"ACEPTO realizar la prueba.":R.rechaza?"NO ACEPTO realizar la prueba.":"No registrada."}</p>
+  </div>
+  <div class="sigs">
+    <div>${sigImg}<div class="sigline">Firma del participante · ${esc(R.nombre||"")} · Doc. ${esc(R.doc||"")}</div></div>
+    <div><div style="height:60pt"></div><div class="sigline">Firma del evaluador · ${esc(R.evaluador||"")}</div></div>
+  </div>
+
+  <h3>3. Tamizaje y preparación</h3>
+  <p>PAR-Q+: ${R.parqSi.length?`<b>${R.parqSi.length} respuesta(s) afirmativa(s):</b>`:"todas las respuestas negativas."}${R.unanswered?` (${R.unanswered} sin responder)`:""}</p>
+  ${R.parqSi.length?`<ul>${R.parqSi.map(q=>`<li>${q}</li>`).join("")}</ul>`:""}
+  <p>Betabloqueadores u otros fármacos cronotrópicos: ${R.beta?"<b>Sí</b>":"No"}. Checklist de preparación: ${R.done}/${R.total} ítems verificados.</p>
+
+  <h3>4. Protocolo y frecuencia cardíaca</h3>
+  <p>${R.modoTxt}.</p>
+  <table>
+    <tr><th>Minuto</th>${R.hr.map((_,i)=>`<th class="num">${i+1}</th>`).join("")}</tr>
+    <tr><th>FC (lpm)</th>${R.hr.map(v=>`<td class="num">${v??"—"}</td>`).join("")}</tr>
+  </table>
+  <div style="max-width:150mm">${chartSVG(R.hr,true)}</div>
+  <p>FC de trabajo: <b>${f1(R.hrWork)} lpm</b> (promedio de los dos últimos minutos), ${R.steady?"en estado estable":"<b>sin estado estable</b>"}.</p>
+
+  <h3>5. Resultado</h3>
+  <div class="bigres">
+    <div><b>${f1(R.rel)}</b><span>ml/kg/min · VO₂máx relativo</span></div>
+    <div><b>${f2(R.abs)}</b><span>L/min · VO₂máx absoluto</span></div>
+    <div><b>${CATS[R.k]}</b><span>Clasificación (Åstrand)</span></div>
+  </div>
+  <table>
+    <tr>${CATS.map((c,i)=>`<th class="${i===R.k?"on":""}">${c}</th>`).join("")}</tr>
+    <tr>${R.ranges.map((r,i)=>`<td class="num ${i===R.k?"on":""}">${r}</td>`).join("")}</tr>
+  </table>
+  <table>
+    <tr><td>VO₂ submáximo</td><td class="num">${f2(R.vo2sub)} L/min</td><td>Intensidad relativa</td><td class="num">${Math.round(R.frac*100)} % VO₂máx</td></tr>
+    <tr><td>VO₂máx sin corregir</td><td class="num">${f2(R.raw)} L/min</td><td>Factor de edad</td><td class="num">× ${f2(R.fac)}</td></tr>
+  </table>
+  ${flags}
+
+  <h3>6. Interpretación</h3>
+  ${R.interp.map(p=>`<p><b>${p[0]}.</b> ${p[1]}</p>`).join("")}
+
+  <h3>Referencias</h3>
+  <p class="ref">Åstrand P-O, Ryhming I. A nomogram for calculation of aerobic capacity (physical fitness) from pulse rate during sub-maximal work. J Appl Physiol. 1954;7(2):218-221.</p>
+  <p class="ref">Åstrand I. Aerobic work capacity in men and women with special reference to age. Acta Physiol Scand. 1960;49(Suppl 169):1-92.</p>`;
+}
+
+/* ---------- Firma ---------- */
+const sig = (()=>{
+  const c=$("sig"), ctx=c.getContext("2d"); let strokes=[], cur=null;
+  const ink=()=>getComputedStyle(document.documentElement).getPropertyValue("--ink").trim()||"#14262b";
+  const pos=e=>{const r=c.getBoundingClientRect();return [(e.clientX-r.left)*c.width/r.width,(e.clientY-r.top)*c.height/r.height];};
+  function paint(g,color){g.clearRect(0,0,c.width,c.height);g.strokeStyle=color;g.lineWidth=2.5;g.lineCap="round";g.lineJoin="round";
+    strokes.forEach(s=>{g.beginPath();s.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));if(s.length===1)g.lineTo(s[0][0]+0.1,s[0][1]);g.stroke();});}
+  c.addEventListener("pointerdown",e=>{e.preventDefault();try{c.setPointerCapture(e.pointerId);}catch(_){}cur=[pos(e)];strokes.push(cur);paint(ctx,ink());});
+  c.addEventListener("pointermove",e=>{if(!cur)return;cur.push(pos(e));paint(ctx,ink());});
+  const end=()=>{if(cur){cur=null;update();}};
+  c.addEventListener("pointerup",end);c.addEventListener("pointercancel",end);
+  try{matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>paint(ctx,ink()));}catch(_){}
+  return {
+    get drawn(){return strokes.some(s=>s.length>1);},
+    clear(){strokes=[];paint(ctx,ink());},
+    export(){const o=document.createElement("canvas");o.width=c.width;o.height=c.height;paint(o.getContext("2d"),"#000");return o.toDataURL("image/png");}
+  };
+})();
+$("btnSigClear").onclick=()=>{sig.clear();update();};
+
+/* ---------- Cronómetro ---------- */
+const timer = (()=>{
+  let t0=null, acc=0, iv=null, lastMin=0, actx=null, wake=null;
+  const el=()=>acc+(t0?(performance.now()-t0)/1000:0);
+  const pad=n=>String(n).padStart(2,"0");
+  function beep(times){
+    if(!$("tSound").checked||!actx) return;
+    for(let k=0;k<times;k++){
+      const o=actx.createOscillator(), g=actx.createGain(), st=actx.currentTime+k*0.3;
+      o.frequency.value=times>1?1046:880; o.connect(g); g.connect(actx.destination);
+      g.gain.setValueAtTime(0.0001,st); g.gain.exponentialRampToValueAtTime(0.3,st+0.02); g.gain.exponentialRampToValueAtTime(0.0001,st+0.25);
+      o.start(st); o.stop(st+0.27);
+    }
   }
-  nMin=Math.max(6,(d.hr||[]).length); renderHR(d.hr||[]);
-  $("exampleTag").hidden=!d.example;
+  function minuteDone(k){ // k = índice del minuto que terminó
+    if(k>=nMin && nMin<12){ const v=readHR(); nMin=Math.min(12,k+1); renderHR(v); }
+    setDue(Math.min(k,nMin-1));
+    beep(k+1===nMin?3:1);
+    const inp=$("hr"+Math.min(k,nMin-1)); if(inp){ try{inp.focus({preventScroll:true});}catch(_){inp.focus();} }
+    update();
+  }
+  function tick(){
+    const e=el(), m=Math.floor(e/60), s=Math.floor(e%60);
+    $("tClock").textContent=`${pad(m)}:${pad(s)}`;
+    $("tBar").style.width=`${(e%60)/60*100}%`;
+    if(m>lastMin){ for(let k=lastMin;k<m;k++) minuteDone(k); lastMin=m; }
+    const curMin=m+1;
+    let phase, msg;
+    if(!t0 && e===0){ phase="Listo para iniciar"; msg="Duración mínima: 6 minutos."; }
+    else if(curMin<=4){ phase=`Minuto ${curMin} · Adaptación`; msg=m>0?`Anota la FC del minuto ${m}.`:"Mantén la cadencia constante."; }
+    else if(curMin<=nMin){ phase=`Minuto ${curMin} · Estado estable`; msg=`Anota la FC del minuto ${m}. Los minutos ${nMin-1} y ${nMin} definen la FC de trabajo.`; }
+    else { phase=`Minuto ${curMin} · Prolongación`; msg=`Se completaron ${m} minutos. Si la FC ya está estable, detén la prueba y pasa a la vuelta a la calma.`; }
+    if(!t0 && e>0) phase="En pausa · "+phase;
+    $("tPhase").textContent=phase; $("tMsg").textContent=msg;
+  }
+  async function start(){
+    try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); if(actx.state==="suspended") await actx.resume(); }catch(_){}
+    try{ wake = await navigator.wakeLock?.request("screen"); }catch(_){}
+    t0=performance.now(); iv=setInterval(tick,200);
+    $("timer").classList.add("running"); $("tStartBtn").textContent="Pausar"; tick();
+  }
+  function pause(){
+    acc=el(); t0=null; clearInterval(iv); iv=null;
+    try{wake?.release();}catch(_){} wake=null;
+    $("timer").classList.remove("running"); $("tStartBtn").textContent="Continuar"; tick();
+  }
+  function reset(){
+    clearInterval(iv); iv=null; t0=null; acc=0; lastMin=0;
+    try{wake?.release();}catch(_){} wake=null;
+    $("timer").classList.remove("running"); $("tStartBtn").textContent="Iniciar"; setDue(-1); tick();
+  }
+  $("tStartBtn").onclick=()=> t0?pause():start();
+  $("tResetBtn").onclick=reset;
+  return {reset};
+})();
+
+/* ---------- Estado inicial ---------- */
+const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;};
+function clearAll(){
+  ["nombre","consNombre","documento","evaluador","edad","peso","fcrep","pas","pad","carga","vo2"].forEach(k=>$(k).value="");
+  $("sexo").value="F"; $("modo").value="ciclo"; $("cfecha").value=today();
+  document.querySelectorAll('#parq input, .checks input:not(#tSound), #consDec input').forEach(el=>el.checked=false);
+  sig.clear(); timer.reset();
+  nMin=6; dueIdx=-1; renderHR([]);
   update();
+  window.scrollTo({top:0});
 }
 
 renderStatic();
-document.addEventListener("input",e=>{ if(e.target.closest(".wrap")){ if(e.target.id!=="btnCopy") update(); }});
-document.addEventListener("change",()=>update());
+// Nombre sincronizado entre los datos y el consentimiento
+$("nombre").addEventListener("input",()=>{$("consNombre").value=$("nombre").value;});
+$("consNombre").addEventListener("input",()=>{$("nombre").value=$("consNombre").value;});
+document.addEventListener("input",e=>{ if(e.target.closest(".wrap")) update(); });
+document.addEventListener("change",e=>{ if(e.target.closest(".wrap")) update(); });
 $("btnAddMin").onclick=()=>{ if(nMin<12){ const v=readHR(); nMin++; renderHR(v); update(); $("hr"+(nMin-1)).focus(); } };
-$("btnDelMin").onclick=()=>{ if(nMin>6){ const v=readHR(); v[nMin-1]=null; nMin--; renderHR(v); update(); } };
-$("btnNew").onclick=()=>load({sexo:"F",modo:"ciclo",hr:[]});
-$("btnExample").onclick=()=>load({...EXAMPLE,example:true});
-$("nombre").addEventListener("input",()=>{ $("exampleTag").hidden=true; },{once:false});
-load({...EXAMPLE,example:true});
+$("btnDelMin").onclick=()=>{ if(nMin>6){ const v=readHR(); v[nMin-1]=null; nMin--; if(dueIdx>=nMin) dueIdx=-1; renderHR(v); update(); } };
+
+// Nueva evaluación: confirma con un segundo toque
+let armT=null;
+$("btnNew").onclick=()=>{
+  const b=$("btnNew");
+  if(b.dataset.armed){ clearTimeout(armT); delete b.dataset.armed; b.textContent="Nueva evaluación"; b.className="primary"; clearAll(); return; }
+  b.dataset.armed="1"; b.textContent="¿Borrar todo? Toca de nuevo"; b.className="danger";
+  armT=setTimeout(()=>{ delete b.dataset.armed; b.textContent="Nueva evaluación"; b.className="primary"; },3500);
+};
+
+clearAll();
 </script>
 
 </body>
