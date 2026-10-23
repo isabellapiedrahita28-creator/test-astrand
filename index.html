@@ -249,10 +249,20 @@ footer p{margin:0}
           <option value="vo2">VO₂ medido directamente</option>
         </select>
       </label>
+      <label class="field" id="fUnidad">Tipo de cicloergómetro
+        <select id="unidad">
+          <option value="W">Electrónico · carga en vatios (W)</option>
+          <option value="kp">Mecánico · resistencia en kp</option>
+        </select>
+      </label>
       <label class="field" id="fCarga">Carga (W)<input type="number" id="carga" min="10" max="400" step="5" inputmode="numeric"></label>
+      <label class="field" id="fKp" hidden>Resistencia (kp)<input type="number" id="kp" min="0.25" max="7" step="0.25" inputmode="decimal"></label>
+      <label class="field" id="fRpm" hidden>Cadencia (rpm)<input type="number" id="rpm" min="30" max="120" step="1" inputmode="numeric"></label>
+      <label class="field" id="fMv" hidden>Metros por vuelta de pedal<input type="number" id="mv" min="1" max="12" step="0.1" inputmode="decimal"></label>
       <label class="field" id="fVo2" hidden>VO₂ submáximo medido (L/min)<input type="number" id="vo2" min="0.3" max="5" step="0.01" inputmode="decimal"></label>
     </div>
     <p class="hint" id="cargaHint"></p>
+    <p class="hint" id="tipoHint"><b>¿No sabes cuál es?</b> Si el cicloergómetro tiene un péndulo o una canastilla con pesas y una escala marcada en kp (como el Monark), es <b>mecánico</b>. Si tiene una consola donde programas los vatios, es <b>electrónico</b>. En un mecánico, la carga depende de la cadencia: mantén las rpm constantes con el metrónomo. El Monark recorre 6 m por vuelta de pedal; en otras marcas, revisa el manual.</p>
   </section>
 
   <!-- 6 -->
@@ -424,11 +434,22 @@ function update(){
   $("prepAlert").innerHTML = done===total ? alertHTML("ok",`<b>${done}/${total}</b> ítems verificados.`) : alertHTML("warn",`<b>${done}/${total}</b> ítems verificados. Completa la checklist antes de iniciar.`);
 
   // Carga
-  $("fCarga").hidden = modo!=="ciclo"; $("fVo2").hidden = modo!=="vo2";
+  const unidad=$("unidad").value, ciclo=modo==="ciclo";
+  $("fUnidad").hidden = !ciclo; $("tipoHint").hidden = !ciclo;
+  $("fCarga").hidden = !(ciclo && unidad==="W");
+  ["fKp","fRpm","fMv"].forEach(id=>$(id).hidden = !(ciclo && unidad==="kp"));
+  $("fVo2").hidden = modo!=="vo2";
   let vo2sub=null, cargaTxt="", modoTxt="";
-  if(modo==="ciclo"){
+  if(ciclo && unidad==="kp"){
+    const kp=+$("kp").value, rpm=+$("rpm").value||50, mv=+$("mv").value||6;
+    const kgm=kp*rpm*mv, w=kgm/6.12;
+    modoTxt = `Cicloergómetro mecánico, ${kp?f2(kp):"—"} kp a ${rpm} rpm, ${mv} m por vuelta (${kp?f0(kgm):"—"} kgm/min ≈ ${kp?f0(w):"—"} W)`;
+    if(kp>0){ vo2sub = kgm*0.00239; cargaTxt=`${f2(kp)} kp × ${rpm} rpm × ${String(mv).replace(".",",")} m = ${f0(kgm)} kgm/min ≈ ${f0(w)} W → VO₂ estimado ${f2(vo2sub)} L/min.`; }
+    if(rpm!==50) cargaTxt += ` El protocolo clásico usa 50 rpm.`;
+    cargaTxt += ` Resistencia sugerida a 50 rpm en un Monark: ${sex==="F"?"1–1,5 kp (poco entrenada) o 1,5–2 kp (entrenada)":"1,5–2 kp (poco entrenado) o 2–3 kp (entrenado)"}.`;
+  } else if(ciclo){
     const w=+$("carga").value; const kgm=w*6.12;
-    modoTxt = `Cicloergómetro a 50 rpm, ${w||"—"} W (${w?f0(kgm):"—"} kgm/min)`;
+    modoTxt = `Cicloergómetro electrónico a 50 rpm, ${w||"—"} W (${w?f0(kgm):"—"} kgm/min)`;
     if(w>0){ vo2sub = kgm*0.00239; cargaTxt=`${w} W = ${f0(kgm)} kgm/min → VO₂ estimado ${f2(vo2sub)} L/min.`; }
     cargaTxt += ` Carga sugerida: ${sex==="F"?"50–75 W (poco entrenada) o 75–100 W (entrenada)":"75–100 W (poco entrenado) o 100–150 W (entrenado)"}.`;
   } else if(modo==="step"){
@@ -462,7 +483,7 @@ function update(){
   R = null;
   const missing=[];
   if(!(edad>0)) missing.push("edad"); if(!(peso>0)) missing.push("peso");
-  if(vo2sub==null) missing.push(modo==="vo2"?"VO₂ medido":"carga"); if(hrWork==null) missing.push(`FC de los minutos ${nMin-1} y ${nMin}`);
+  if(vo2sub==null) missing.push(modo==="vo2"?"VO₂ medido":(ciclo&&unidad==="kp"?"resistencia en kp":"carga")); if(hrWork==null) missing.push(`FC de los minutos ${nMin-1} y ${nMin}`);
   if(missing.length){ $("resBody").innerHTML = `<p class="hint">Para ver el resultado completa: ${missing.join(", ")}.</p>`; return; }
 
   const a = sex==="M"?63:73;
@@ -717,6 +738,7 @@ const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMon
 function clearAll(){
   ["nombre","consNombre","documento","evaluador","edad","peso","fcrep","pas","pad","carga","vo2"].forEach(k=>$(k).value="");
   $("sexo").value="F"; $("modo").value="ciclo"; $("cfecha").value=today();
+  $("unidad").value="W"; $("kp").value=""; $("rpm").value="50"; $("mv").value="6";
   document.querySelectorAll('#parq input, .checks input:not(#tSound), #consDec input').forEach(el=>el.checked=false);
   sig.clear(); timer.reset();
   nMin=6; dueIdx=-1; renderHR([]);
